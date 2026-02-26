@@ -1,26 +1,33 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
-import { TaskCreate } from "./endpoints/taskCreate";
-import { TaskDelete } from "./endpoints/taskDelete";
-import { TaskFetch } from "./endpoints/taskFetch";
-import { TaskList } from "./endpoints/taskList";
+import { cors } from "hono/cors";
+import type { Env } from "./types";
+import { Timeline } from "./endpoints/timeline";
+import { Billboard200 } from "./endpoints/billboard";
+import { ImdbPopular } from "./endpoints/imdb";
+import { SteamProfiles } from "./endpoints/steamProfiles";
+import { HackerNews } from "./endpoints/hackernews";
+import { GitHubReleases } from "./endpoints/githubReleases";
+import { WikipediaWatchlist } from "./endpoints/wikipediaWatchlist";
 
-// Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
 
-// Setup OpenAPI registry
-const openapi = fromHono(app, {
-	docs_url: "/",
-});
+app.use(
+  "*",
+  cors({
+    origin: "https://www.michi.onl",
+    allowMethods: ["GET", "POST", "OPTIONS"],
+  }),
+);
 
-// Register OpenAPI endpoints
-openapi.get("/api/tasks", TaskList);
-openapi.post("/api/tasks", TaskCreate);
-openapi.get("/api/tasks/:taskSlug", TaskFetch);
-openapi.delete("/api/tasks/:taskSlug", TaskDelete);
+const openapi = fromHono(app, { docs_url: "/" });
 
-// You may also register routes for non OpenAPI directly on Hono
-// app.get('/test', (c) => c.text('Hono!'))
+openapi.get("/api/timeline", Timeline);
+openapi.get("/api/billboard-200", Billboard200);
+openapi.get("/api/imdb", ImdbPopular);
+openapi.get("/api/steam-profiles", SteamProfiles);
+openapi.get("/api/hackernews", HackerNews);
+openapi.get("/api/github-releases", GitHubReleases);
+openapi.post("/api/wikipedia-watchlist", WikipediaWatchlist);
 
-// Export the Hono app
 export default app;
