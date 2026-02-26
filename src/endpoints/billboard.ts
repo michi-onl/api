@@ -1,4 +1,5 @@
-import { OpenAPIRoute } from "chanfana";
+import { contentJson, OpenAPIRoute } from "chanfana";
+import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
@@ -7,12 +8,32 @@ const MAX_ITEMS = 6;
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
+const BillboardItemSchema = z.object({
+  position: z.number().describe("Chart position"),
+  title: z.string().describe("Album title"),
+  artist: z.string().describe("Artist name"),
+  last_week: z.number().describe("Position last week (0 if new)"),
+  peak: z.number().describe("Peak chart position"),
+  weeks: z.number().describe("Weeks on chart"),
+});
+
+const BillboardResponseSchema = z.object({
+  music: z.object({
+    data_title: z.string().describe("Chart name"),
+    data_desc: z.string().describe("Chart description"),
+    data: z.array(BillboardItemSchema),
+  }),
+});
+
 export class Billboard200 extends OpenAPIRoute {
   schema = {
     tags: ["Music"],
     summary: "Billboard 200 chart top entries",
     responses: {
-      "200": { description: "Billboard 200 chart data" },
+      "200": {
+        description: "Billboard 200 chart data",
+        ...contentJson(BillboardResponseSchema),
+      },
     },
   };
 

@@ -1,9 +1,29 @@
-import { OpenAPIRoute } from "chanfana";
+import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import type { AppContext } from "../types";
 
 const MAX_REPOS = 8;
 const GITHUB_REPO_RE = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
+
+const ReleaseSchema = z.object({
+  repo: z.string().describe("Repository in owner/repo format"),
+  repoUrl: z.string().describe("GitHub repository URL"),
+  name: z.string().describe("Release name"),
+  tagName: z.string().describe("Git tag"),
+  publishedAt: z.string().describe("ISO 8601 publish date"),
+  timeAgo: z.string().describe("Human-readable time since publish"),
+  author: z.string().describe("Release author login"),
+  url: z.string().describe("Release page URL"),
+  isPrerelease: z.boolean(),
+  isDraft: z.boolean(),
+  body: z.string().describe("Release notes (truncated to 500 chars)"),
+});
+
+const ReleasesResponseSchema = z.object({
+  source: z.string(),
+  count: z.number().describe("Number of repos returned"),
+  releases: z.array(ReleaseSchema),
+});
 
 export class GitHubReleases extends OpenAPIRoute {
   schema = {
@@ -17,7 +37,10 @@ export class GitHubReleases extends OpenAPIRoute {
       }),
     },
     responses: {
-      "200": { description: "Latest release info for each repo" },
+      "200": {
+        description: "Latest release info for each repo",
+        ...contentJson(ReleasesResponseSchema),
+      },
       "400": { description: "Missing repos parameter" },
     },
   };

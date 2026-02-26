@@ -1,4 +1,5 @@
-import { OpenAPIRoute } from "chanfana";
+import { contentJson, OpenAPIRoute } from "chanfana";
+import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
@@ -8,12 +9,34 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 const DIGIT_RE = /(\d+)/;
 
+const HNStorySchema = z.object({
+  id: z.string().describe("Hacker News story ID"),
+  title: z.string().describe("Story title"),
+  url: z.string().describe("Story URL"),
+  domain: z.string().describe("Source domain"),
+  points: z.number().describe("Upvote count"),
+  author: z.string().describe("Author username"),
+  timePosted: z.string().describe("Relative time since posted"),
+  numComments: z.number().describe("Number of comments"),
+  hnUrl: z.string().describe("Hacker News discussion URL"),
+});
+
+const HNResponseSchema = z.object({
+  source: z.string(),
+  url: z.string(),
+  count: z.number().describe("Number of stories returned"),
+  stories: z.array(HNStorySchema),
+});
+
 export class HackerNews extends OpenAPIRoute {
   schema = {
     tags: ["Tech"],
     summary: "Hacker News best stories",
     responses: {
-      "200": { description: "Top stories from Hacker News" },
+      "200": {
+        description: "Top stories from Hacker News",
+        ...contentJson(HNResponseSchema),
+      },
     },
   };
 

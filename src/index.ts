@@ -20,7 +20,31 @@ app.use(
   }),
 );
 
-const openapi = fromHono(app, { docs_url: "/" });
+const openapi = fromHono(app, {
+  docs_url: "/",
+  schema: {
+    info: {
+      title: "michi.onl API",
+      version: "1.0.0",
+      description:
+        "Personal API powering michi.onl — aggregates data from Billboard, Hacker News, GitHub, Steam, IMDb, Wikipedia, and more.",
+    },
+    servers: [
+      {
+        url: "https://api.michi.onl",
+        description: "Production",
+      },
+    ],
+    tags: [
+      { name: "Music", description: "Billboard chart data" },
+      { name: "Tech", description: "Hacker News and GitHub data" },
+      { name: "Gaming", description: "Steam profile data" },
+      { name: "Media", description: "IMDb ratings and watchlist" },
+      { name: "Timeline", description: "Aggregated timeline events" },
+      { name: "Wiki", description: "Wikipedia watchlist data" },
+    ],
+  },
+});
 
 openapi.get("/api/timeline", Timeline);
 openapi.get("/api/billboard-200", Billboard200);

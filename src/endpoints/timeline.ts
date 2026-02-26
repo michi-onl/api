@@ -1,4 +1,5 @@
-import { OpenAPIRoute } from "chanfana";
+import { contentJson, OpenAPIRoute } from "chanfana";
+import { z } from "zod";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
 import { fetchGitHub } from "../fetchers/github";
@@ -8,12 +9,23 @@ import { fetchGallery } from "../fetchers/gallery";
 import { fetchImdb } from "../fetchers/imdb";
 import { normalize } from "../normalize";
 
+const TimelineEventSchema = z.object({
+  id: z.string().describe("Unique event identifier"),
+  date: z.string().describe("ISO 8601 date"),
+  source: z.enum(["github", "wikipedia", "blog", "gallery", "imdb"]).describe("Event source"),
+  title: z.string().describe("Event title"),
+  url: z.string().describe("Event URL"),
+});
+
 export class Timeline extends OpenAPIRoute {
   schema = {
     tags: ["Timeline"],
     summary: "Aggregated timeline events from multiple sources",
     responses: {
-      "200": { description: "Timeline events sorted by date descending" },
+      "200": {
+        description: "Timeline events sorted by date descending",
+        ...contentJson(z.array(TimelineEventSchema)),
+      },
     },
   };
 

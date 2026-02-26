@@ -1,4 +1,4 @@
-import { OpenAPIRoute } from "chanfana";
+import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
@@ -15,6 +15,23 @@ const MINUTES_RE = /(\d+(?:\.\d+)?)\s*minutes?/;
 const HOURS_RE = /(\d+(?:\.\d+)?)\s*(?:hrs?|hours?)/;
 const DIGIT_RE = /(\d+)/;
 
+const SteamGameSchema = z.object({
+  name: z.string().describe("Game name"),
+  hoursPlayed: z.string().describe("Hours played display text"),
+  hoursPlayedNumeric: z.number().describe("Hours played as decimal"),
+  lastPlayed: z.string().describe("Last played date text"),
+  lastPlayedShort: z.string().describe("Short last played date"),
+  appId: z.string().nullable().describe("Steam app ID"),
+  iconUrl: z.string().nullable().describe("Game icon URL"),
+});
+
+const SteamProfileSchema = z.object({
+  profileName: z.string().describe("Display name"),
+  profileUrl: z.string().describe("Steam profile URL"),
+  recentGames: z.array(SteamGameSchema),
+  totalGames: z.number().nullable().describe("Total games owned"),
+});
+
 export class SteamProfiles extends OpenAPIRoute {
   schema = {
     tags: ["Gaming"],
@@ -27,7 +44,10 @@ export class SteamProfiles extends OpenAPIRoute {
       }),
     },
     responses: {
-      "200": { description: "Steam profile data with recent games" },
+      "200": {
+        description: "Steam profile data with recent games. Keys are profile usernames.",
+        ...contentJson(z.record(z.string(), SteamProfileSchema)),
+      },
       "400": { description: "Missing profiles parameter" },
     },
   };

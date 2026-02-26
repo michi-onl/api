@@ -1,4 +1,5 @@
-import { OpenAPIRoute } from "chanfana";
+import { contentJson, OpenAPIRoute } from "chanfana";
+import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
@@ -12,12 +13,37 @@ const URLS: Record<string, string> = {
   tv_shows: "https://www.imdb.com/chart/tvmeter/",
 };
 
+const ImdbItemSchema = z.object({
+  title: z.string().describe("Movie or show title (includes rank prefix)"),
+  rank: z.number().describe("Popularity rank"),
+  year: z.string().describe("Release year or range"),
+  length: z.string().describe("Runtime"),
+  age: z.string().describe("Age rating"),
+  href: z.string().describe("IMDb URL"),
+  rating: z.string().describe("IMDb rating"),
+  numVotes: z.string().describe("Number of votes"),
+});
+
+const ImdbCategorySchema = z.object({
+  data_title: z.string().describe("Category display name"),
+  data_desc: z.string().describe("Category description"),
+  data: z.array(ImdbItemSchema),
+});
+
+const ImdbResponseSchema = z.object({
+  movies: ImdbCategorySchema,
+  tv_shows: ImdbCategorySchema,
+});
+
 export class ImdbPopular extends OpenAPIRoute {
   schema = {
     tags: ["Entertainment"],
     summary: "IMDb most popular movies and TV shows",
     responses: {
-      "200": { description: "Popular movies and TV shows from IMDb" },
+      "200": {
+        description: "Popular movies and TV shows from IMDb",
+        ...contentJson(ImdbResponseSchema),
+      },
     },
   };
 

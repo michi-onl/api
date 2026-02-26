@@ -1,4 +1,4 @@
-import { OpenAPIRoute } from "chanfana";
+import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
@@ -7,6 +7,26 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 const WIKI_LANG_RE = /^[a-z]{2,3}$/;
 const WIKI_USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,254}$/;
+
+const WikiEditSchema = z.object({
+  title: z.string().describe("Article title"),
+  link: z.string().describe("Diff URL"),
+  description: z.string().describe("Edit summary HTML"),
+  creator: z.string().describe("Editor username"),
+  publishedAt: z.string().describe("RFC 2822 publish date"),
+  timeAgo: z.string().describe("Human-readable time since edit"),
+  language: z.string().describe("Wikipedia language code"),
+});
+
+const WikiResponseSchema = z.object({
+  source: z.string(),
+  count: z.number().describe("Number of edits returned"),
+  edits: z.array(WikiEditSchema),
+  errors: z.array(z.object({
+    language: z.string(),
+    error: z.string(),
+  })).nullable().describe("Errors per language, or null if none"),
+});
 
 export class WikipediaWatchlist extends OpenAPIRoute {
   schema = {
@@ -36,7 +56,10 @@ export class WikipediaWatchlist extends OpenAPIRoute {
       },
     },
     responses: {
-      "200": { description: "Watchlist edits" },
+      "200": {
+        description: "Watchlist edits",
+        ...contentJson(WikiResponseSchema),
+      },
       "400": { description: "Missing required parameters" },
     },
   };
