@@ -26,7 +26,9 @@ export async function fetchWikipedia(user: string): Promise<TimelineEvent[]> {
     uclimit: "50",
   });
 
-  const res = await fetch(`https://de.wikipedia.org/w/api.php?${params}`);
+  const res = await fetch(`https://de.wikipedia.org/w/api.php?${params}`, {
+    headers: { "User-Agent": "timeline-worker/1.0" },
+  });
   if (!res.ok) return [];
 
   const data: { query?: { usercontribs?: WikiContrib[] } } = await res.json();

@@ -6,39 +6,70 @@ interface GitHubEvent {
   repo: { name: string };
   created_at: string;
   payload: {
-    commits?: { message: string }[];
     action?: string;
-    pull_request?: { title: string; html_url: string };
+    number?: number;
+    pull_request?: { title?: string; html_url?: string; number?: number };
   };
 }
 
-export async function fetchGitHub(user: string): Promise<TimelineEvent[]> {
-  const res = await fetch(
-    `https://api.github.com/users/${user}/events?per_page=100`,
-    { headers: { "User-Agent": "timeline-worker" } },
-  );
-  if (!res.ok) return [];
+interface GitHubCommitEvent {
+  sha: string;
+  commit: { message: string; author: { date: string } };
+  html_url: string;
+  repository: { full_name: string };
+}
 
-  const events: GitHubEvent[] = await res.json();
+export async function fetchGitHub(
+  user: string,
+  token?: string,
+): Promise<TimelineEvent[]> {
+  const headers: Record<string, string> = { "User-Agent": "timeline-worker" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const [eventsRes, commitsRes] = await Promise.all([
+    fetch(`https://api.github.com/users/${user}/events?per_page=100`, {
+      headers,
+    }),
+    fetch(
+      `https://api.github.com/search/commits?q=author:${user}&sort=author-date&per_page=30`,
+      { headers },
+    ),
+  ]);
+
   const result: TimelineEvent[] = [];
 
-  for (const e of events) {
-    if (e.type === "PushEvent" && e.payload.commits?.length) {
-      const msg = e.payload.commits[0].message.split("\n")[0];
+  // PR events
+  if (eventsRes.ok) {
+    const events: GitHubEvent[] = await eventsRes.json();
+    for (const e of events) {
+      if (e.type !== "PullRequestEvent" || !e.payload.pull_request) continue;
+      const pr = e.payload.pull_request;
+      const num = e.payload.number ?? pr.number;
+      const action = e.payload.action ?? "opened";
+      const title = pr.title
+        ? `PR: ${pr.title}`
+        : `${action} PR #${num} in ${e.repo.name}`;
       result.push({
         id: `github:${e.id}`,
         date: e.created_at,
         source: "github",
-        title: `${e.repo.name}: ${msg}`,
-        url: `https://github.com/${e.repo.name}`,
+        title,
+        url: pr.html_url ?? `https://github.com/${e.repo.name}/pull/${num}`,
       });
-    } else if (e.type === "PullRequestEvent" && e.payload.pull_request) {
+    }
+  }
+
+  // Commits via search API (reliable, includes full message)
+  if (commitsRes.ok) {
+    const data: { items?: GitHubCommitEvent[] } = await commitsRes.json();
+    for (const c of data.items ?? []) {
+      const msg = c.commit.message.split("\n")[0];
       result.push({
-        id: `github:${e.id}`,
-        date: e.created_at,
+        id: `github:commit:${c.sha.slice(0, 12)}`,
+        date: c.commit.author.date,
         source: "github",
-        title: `PR: ${e.payload.pull_request.title}`,
-        url: e.payload.pull_request.html_url,
+        title: `${c.repository.full_name}: ${msg}`,
+        url: c.html_url,
       });
     }
   }

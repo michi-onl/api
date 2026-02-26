@@ -1,8 +1,1430 @@
 [
   {
-    "title": "Interstellar",
+    "title": "Chainsaw Man",
+    "rating": 10,
+    "date": "2026-02-16",
+    "imdbId": "tt13616990"
+  },
+  {
+    "title": "Marty Supreme",
     "rating": 9,
-    "date": "2026-02-20",
+    "date": "2026-02-15",
+    "imdbId": "tt32916440"
+  },
+  {
+    "title": "Space Dandy",
+    "rating": 10,
+    "date": "2026-02-08",
+    "imdbId": "tt3158246"
+  },
+  {
+    "title": "Pluribus",
+    "rating": 10,
+    "date": "2026-01-18",
+    "imdbId": "tt22202452"
+  },
+  {
+    "title": "Attack on Titan",
+    "rating": 10,
+    "date": "2026-01-17",
+    "imdbId": "tt2560140"
+  },
+  {
+    "title": "Bodyguard",
+    "rating": 3,
+    "date": "2026-01-07",
+    "imdbId": "tt0103855"
+  },
+  {
+    "title": "Avatar: Fire and Ash",
+    "rating": 8,
+    "date": "2025-12-30",
+    "imdbId": "tt1757678"
+  },
+  {
+    "title": "Ballerina",
+    "rating": 6,
+    "date": "2025-11-08",
+    "imdbId": "tt7181546"
+  },
+  {
+    "title": "KPop Demon Hunters",
+    "rating": 9,
+    "date": "2025-10-30",
+    "imdbId": "tt14205554"
+  },
+  {
+    "title": "Smiling Friends: Silly Samuel",
+    "rating": 9,
+    "date": "2025-10-07",
+    "imdbId": "tt32634838"
+  },
+  {
+    "title": "The Wonderfully Weird World of Gumball",
+    "rating": 10,
+    "date": "2025-08-13",
+    "imdbId": "tt36985473"
+  },
+  {
+    "title": "South Park",
+    "rating": 10,
+    "date": "2025-08-13",
+    "imdbId": "tt0121955"
+  },
+  {
+    "title": "South Park: Sermon on the 'Mount",
+    "rating": 10,
+    "date": "2025-08-04",
+    "imdbId": "tt26764413"
+  },
+  {
+    "title": "Reservoir Dogs - Wilde Hunde",
+    "rating": 9,
+    "date": "2025-08-02",
+    "imdbId": "tt0105236"
+  },
+  {
+    "title": "Zeig mir, wer du bist",
+    "rating": 7,
+    "date": "2025-07-07",
+    "imdbId": "tt14577874"
+  },
+  {
+    "title": "F1",
+    "rating": 6,
+    "date": "2025-06-29",
+    "imdbId": "tt16311594"
+  },
+  {
+    "title": "Love, Death & Robots: The Other Large Thing",
+    "rating": 8,
+    "date": "2025-05-26",
+    "imdbId": "tt36663027"
+  },
+  {
+    "title": "Loiter Squad",
+    "rating": 9,
+    "date": "2025-04-26",
+    "imdbId": "tt2272367"
+  },
+  {
+    "title": "Andor",
+    "rating": 10,
+    "date": "2025-04-26",
+    "imdbId": "tt9253284"
+  },
+  {
+    "title": "Ahsoka",
+    "rating": 1,
+    "date": "2025-04-25",
+    "imdbId": "tt13622776"
+  },
+  {
+    "title": "Mo",
+    "rating": 10,
+    "date": "2025-04-17",
+    "imdbId": "tt15875168"
+  },
+  {
+    "title": "Black Mirror: Hotel Reverie",
+    "rating": 10,
+    "date": "2025-04-14",
+    "imdbId": "tt31790091"
+  },
+  {
+    "title": "Black Mirror: Plaything",
+    "rating": 9,
+    "date": "2025-04-13",
+    "imdbId": "tt31215636"
+  },
+  {
+    "title": "Black Mirror: Bête Noire",
+    "rating": 7,
+    "date": "2025-04-13",
+    "imdbId": "tt31790114"
+  },
+  {
+    "title": "Black Mirror: USS Callister: Into Infinity",
+    "rating": 8,
+    "date": "2025-04-13",
+    "imdbId": "tt31790115"
+  },
+  {
+    "title": "Black Mirror: Eulogy",
+    "rating": 10,
+    "date": "2025-04-13",
+    "imdbId": "tt31790112"
+  },
+  {
+    "title": "Black Mirror: Common People",
+    "rating": 10,
+    "date": "2025-04-13",
+    "imdbId": "tt30127325"
+  },
+  {
+    "title": "Black Mirror: Hang the DJ",
+    "rating": 10,
+    "date": "2025-04-08",
+    "imdbId": "tt5710978"
+  },
+  {
+    "title": "Schneewittchen",
+    "rating": 1,
+    "date": "2025-04-05",
+    "imdbId": "tt6208148"
+  },
+  {
+    "title": "Black Mirror: Black Museum",
+    "rating": 10,
+    "date": "2025-03-26",
+    "imdbId": "tt5058700"
+  },
+  {
+    "title": "Coraline",
+    "rating": 10,
+    "date": "2025-03-26",
+    "imdbId": "tt0327597"
+  },
+  {
+    "title": "Achtsam Morden",
+    "rating": 6,
+    "date": "2025-03-23",
+    "imdbId": "tt30217222"
+  },
+  {
+    "title": "Mickey 17",
+    "rating": 8,
+    "date": "2025-03-06",
+    "imdbId": "tt12299608"
+  },
+  {
+    "title": "Ghost in the Shell",
+    "rating": 8,
+    "date": "2025-02-22",
+    "imdbId": "tt0113568"
+  },
+  {
+    "title": "Stoner Cats",
+    "rating": 9,
+    "date": "2025-02-04",
+    "imdbId": "tt15139516"
+  },
+  {
+    "title": "Ran",
+    "rating": 8,
+    "date": "2025-02-04",
+    "imdbId": "tt0089881"
+  },
+  {
+    "title": "Trailer Park Boys",
+    "rating": 9,
+    "date": "2025-02-04",
+    "imdbId": "tt0290988"
+  },
+  {
+    "title": "The Whale",
+    "rating": 8,
+    "date": "2025-02-04",
+    "imdbId": "tt13833688"
+  },
+  {
+    "title": "Das Fest",
+    "rating": 10,
+    "date": "2025-01-13",
+    "imdbId": "tt0154420"
+  },
+  {
+    "title": "Bushworld Adventures",
+    "rating": 8,
+    "date": "2025-01-11",
+    "imdbId": "tt8230614"
+  },
+  {
+    "title": "Smiling Friends",
+    "rating": 9,
+    "date": "2025-01-11",
+    "imdbId": "tt12074628"
+  },
+  {
+    "title": "Drive My Car",
+    "rating": 9,
+    "date": "2025-01-04",
+    "imdbId": "tt14039582"
+  },
+  {
+    "title": "Perfect Days",
+    "rating": 10,
+    "date": "2024-12-31",
+    "imdbId": "tt27503384"
+  },
+  {
+    "title": "Bis dann, mein Sohn",
+    "rating": 7,
+    "date": "2024-12-31",
+    "imdbId": "tt9581076"
+  },
+  {
+    "title": "The Substance",
+    "rating": 9,
+    "date": "2024-12-26",
+    "imdbId": "tt17526714"
+  },
+  {
+    "title": "Vertauschte Weihnachten",
+    "rating": 8,
+    "date": "2024-12-23",
+    "imdbId": "tt29961072"
+  },
+  {
+    "title": "Black Mirror: Fifteen Million Merits",
+    "rating": 8,
+    "date": "2024-12-05",
+    "imdbId": "tt2089049"
+  },
+  {
+    "title": "Black Mirror: Shut Up and Dance",
+    "rating": 9,
+    "date": "2024-12-05",
+    "imdbId": "tt5709230"
+  },
+  {
+    "title": "Black Mirror: Playtest",
+    "rating": 10,
+    "date": "2024-12-05",
+    "imdbId": "tt5709242"
+  },
+  {
+    "title": "Vinland Saga",
+    "rating": 10,
+    "date": "2024-11-24",
+    "imdbId": "tt10233448"
+  },
+  {
+    "title": "The Purge - Die Säuberung",
+    "rating": 2,
+    "date": "2024-11-16",
+    "imdbId": "tt2184339"
+  },
+  {
+    "title": "Her",
+    "rating": 2,
+    "date": "2024-11-12",
+    "imdbId": "tt1798709"
+  },
+  {
+    "title": "The Zone of Interest",
+    "rating": 10,
+    "date": "2024-11-01",
+    "imdbId": "tt7160372"
+  },
+  {
+    "title": "Mad Max: Fury Road",
+    "rating": 8,
+    "date": "2024-10-27",
+    "imdbId": "tt1392190"
+  },
+  {
+    "title": "The 8 Show",
+    "rating": 8,
+    "date": "2024-10-26",
+    "imdbId": "tt30423279"
+  },
+  {
+    "title": "Cowboy Bebop",
+    "rating": 10,
+    "date": "2024-10-14",
+    "imdbId": "tt0213338"
+  },
+  {
+    "title": "Joker: Folie à Deux",
+    "rating": 1,
+    "date": "2024-10-06",
+    "imdbId": "tt11315808"
+  },
+  {
+    "title": "Dorohedoro",
+    "rating": 10,
+    "date": "2024-10-05",
+    "imdbId": "tt11147852"
+  },
+  {
+    "title": "El Camino: Ein Breaking Bad Film",
+    "rating": 8,
+    "date": "2024-09-28",
+    "imdbId": "tt9243946"
+  },
+  {
+    "title": "Peaky Blinders - Gangs of Birmingham",
+    "rating": 9,
+    "date": "2024-09-14",
+    "imdbId": "tt2442560"
+  },
+  {
+    "title": "Joker",
+    "rating": 8,
+    "date": "2024-09-07",
+    "imdbId": "tt7286456"
+  },
+  {
+    "title": "Captain Marvel",
+    "rating": 4,
+    "date": "2024-08-22",
+    "imdbId": "tt4154664"
+  },
+  {
+    "title": "Black Panther: Wakanda Forever",
+    "rating": 3,
+    "date": "2024-08-22",
+    "imdbId": "tt9114286"
+  },
+  {
+    "title": "Ant-Man and the Wasp",
+    "rating": 7,
+    "date": "2024-08-22",
+    "imdbId": "tt5095030"
+  },
+  {
+    "title": "Guardians of the Galaxy Vol. 2",
+    "rating": 9,
+    "date": "2024-08-22",
+    "imdbId": "tt3896198"
+  },
+  {
+    "title": "Eternals",
+    "rating": 3,
+    "date": "2024-08-22",
+    "imdbId": "tt9032400"
+  },
+  {
+    "title": "American Gods",
+    "rating": 3,
+    "date": "2024-08-19",
+    "imdbId": "tt1898069"
+  },
+  {
+    "title": "The Wilds",
+    "rating": 8,
+    "date": "2024-08-19",
+    "imdbId": "tt8633062"
+  },
+  {
+    "title": "Sonic The Hedgehog",
+    "rating": 7,
+    "date": "2024-08-19",
+    "imdbId": "tt3794354"
+  },
+  {
+    "title": "Being Human",
+    "rating": 7,
+    "date": "2024-08-19",
+    "imdbId": "tt1595680"
+  },
+  {
+    "title": "Der Schuh des Manitu",
+    "rating": 8,
+    "date": "2024-08-19",
+    "imdbId": "tt0248408"
+  },
+  {
+    "title": "Bullyparade",
+    "rating": 9,
+    "date": "2024-08-19",
+    "imdbId": "tt0221733"
+  },
+  {
+    "title": "Der Boandlkramer und die ewige Liebe",
+    "rating": 5,
+    "date": "2024-08-19",
+    "imdbId": "tt11390656"
+  },
+  {
+    "title": "Valerian - Die Stadt der tausend Planeten",
+    "rating": 8,
+    "date": "2024-08-18",
+    "imdbId": "tt2239822"
+  },
+  {
+    "title": "Spider-Man",
+    "rating": 8,
+    "date": "2024-08-18",
+    "imdbId": "tt0145487"
+  },
+  {
+    "title": "Anna: Die Agentin",
+    "rating": 7,
+    "date": "2024-08-18",
+    "imdbId": "tt7456310"
+  },
+  {
+    "title": "Lucy",
+    "rating": 7,
+    "date": "2024-08-18",
+    "imdbId": "tt2872732"
+  },
+  {
+    "title": "Nerve",
+    "rating": 6,
+    "date": "2024-08-18",
+    "imdbId": "tt3531824"
+  },
+  {
+    "title": "Motherland: Fort Salem",
+    "rating": 7,
+    "date": "2024-08-18",
+    "imdbId": "tt9900092"
+  },
+  {
+    "title": "Ghost in the Shell SAC_2045",
+    "rating": 7,
+    "date": "2024-08-18",
+    "imdbId": "tt9466298"
+  },
+  {
+    "title": "Ich - Einfach unverbesserlich 3",
+    "rating": 7,
+    "date": "2024-08-18",
+    "imdbId": "tt3469046"
+  },
+  {
+    "title": "Ich - Einfach unverbesserlich 2",
+    "rating": 8,
+    "date": "2024-08-18",
+    "imdbId": "tt1690953"
+  },
+  {
+    "title": "Ich - Einfach unverbesserlich",
+    "rating": 8,
+    "date": "2024-08-18",
+    "imdbId": "tt1323594"
+  },
+  {
+    "title": "Jumanji: Willkommen im Dschungel",
+    "rating": 8,
+    "date": "2024-08-18",
+    "imdbId": "tt2283362"
+  },
+  {
+    "title": "The Boys",
+    "rating": 6,
+    "date": "2024-08-15",
+    "imdbId": "tt1190634"
+  },
+  {
+    "title": "Sausage Party - Es geht um die Wurst",
+    "rating": 8,
+    "date": "2024-08-08",
+    "imdbId": "tt1700841"
+  },
+  {
+    "title": "Maharaja",
+    "rating": 10,
+    "date": "2024-08-03",
+    "imdbId": "tt26548265"
+  },
+  {
+    "title": "Deadpool & Wolverine",
+    "rating": 8,
+    "date": "2024-08-02",
+    "imdbId": "tt6263850"
+  },
+  {
+    "title": "Ninjago",
+    "rating": 10,
+    "date": "2024-08-01",
+    "imdbId": "tt1871731"
+  },
+  {
+    "title": "Die Drachenreiter von Berk",
+    "rating": 9,
+    "date": "2024-08-01",
+    "imdbId": "tt2325846"
+  },
+  {
+    "title": "Dark",
+    "rating": 10,
+    "date": "2024-08-01",
+    "imdbId": "tt5753856"
+  },
+  {
+    "title": "Batwoman",
+    "rating": 3,
+    "date": "2024-08-01",
+    "imdbId": "tt8712204"
+  },
+  {
+    "title": "Legends of Tomorrow",
+    "rating": 7,
+    "date": "2024-08-01",
+    "imdbId": "tt4532368"
+  },
+  {
+    "title": "Supergirl",
+    "rating": 6,
+    "date": "2024-08-01",
+    "imdbId": "tt4016454"
+  },
+  {
+    "title": "iZombie",
+    "rating": 8,
+    "date": "2024-08-01",
+    "imdbId": "tt3501584"
+  },
+  {
+    "title": "6 Underground",
+    "rating": 7,
+    "date": "2024-08-01",
+    "imdbId": "tt8106534"
+  },
+  {
+    "title": "Teen Wolf",
+    "rating": 8,
+    "date": "2024-08-01",
+    "imdbId": "tt1567432"
+  },
+  {
+    "title": "Marvel's Agents of S.H.I.E.L.D.",
+    "rating": 10,
+    "date": "2024-08-01",
+    "imdbId": "tt2364582"
+  },
+  {
+    "title": "Loki",
+    "rating": 8,
+    "date": "2024-08-01",
+    "imdbId": "tt9140554"
+  },
+  {
+    "title": "Lucifer",
+    "rating": 10,
+    "date": "2024-08-01",
+    "imdbId": "tt4052886"
+  },
+  {
+    "title": "The End of the F***ing World",
+    "rating": 8,
+    "date": "2024-08-01",
+    "imdbId": "tt6257970"
+  },
+  {
+    "title": "Inside Job",
+    "rating": 10,
+    "date": "2024-08-01",
+    "imdbId": "tt10231312"
+  },
+  {
+    "title": "Nirgendwo",
+    "rating": 7,
+    "date": "2024-08-01",
+    "imdbId": "tt15789472"
+  },
+  {
+    "title": "Downsizing",
+    "rating": 3,
+    "date": "2024-08-01",
+    "imdbId": "tt1389072"
+  },
+  {
+    "title": "The Rain",
+    "rating": 5,
+    "date": "2024-08-01",
+    "imdbId": "tt6656238"
+  },
+  {
+    "title": "Better Than Us",
+    "rating": 8,
+    "date": "2024-08-01",
+    "imdbId": "tt8285216"
+  },
+  {
+    "title": "Emoji-Nation",
+    "rating": 8,
+    "date": "2024-07-02",
+    "imdbId": "tt15558232"
+  },
+  {
+    "title": "Mafia und Banken",
+    "rating": 8,
+    "date": "2024-07-02",
+    "imdbId": "tt29376669"
+  },
+  {
+    "title": "Becoming Nawalny - Putins Staatsfeind Nr. 1",
+    "rating": 9,
+    "date": "2024-07-02",
+    "imdbId": "tt31357825"
+  },
+  {
+    "title": "Killerroboter - KI im Krieg",
+    "rating": 8,
+    "date": "2024-07-02",
+    "imdbId": "tt27691579"
+  },
+  {
+    "title": "Der ewige Korea-Krieg",
+    "rating": 9,
+    "date": "2024-07-02",
+    "imdbId": "tt12351900"
+  },
+  {
+    "title": "The Acolyte",
+    "rating": 1,
+    "date": "2024-06-14",
+    "imdbId": "tt12262202"
+  },
+  {
+    "title": "Black Mirror: Hated in the Nation",
+    "rating": 7,
+    "date": "2024-06-10",
+    "imdbId": "tt5709236"
+  },
+  {
+    "title": "Black Mirror: Loch Henry",
+    "rating": 10,
+    "date": "2024-06-08",
+    "imdbId": "tt27731608"
+  },
+  {
+    "title": "Cyberpunk 2077",
+    "rating": 9,
+    "date": "2024-06-08",
+    "imdbId": "tt3810192"
+  },
+  {
+    "title": "Black Mirror: White Bear",
+    "rating": 8,
+    "date": "2024-06-08",
+    "imdbId": "tt2542420"
+  },
+  {
+    "title": "Black Mirror: Nosedive",
+    "rating": 9,
+    "date": "2024-06-07",
+    "imdbId": "tt5497778"
+  },
+  {
+    "title": "Black Mirror: San Junipero",
+    "rating": 7,
+    "date": "2024-06-04",
+    "imdbId": "tt4538072"
+  },
+  {
+    "title": "Furiosa: A Mad Max Saga",
+    "rating": 8,
+    "date": "2024-06-01",
+    "imdbId": "tt12037194"
+  },
+  {
+    "title": "Black Mirror: Joan Is Awful",
+    "rating": 9,
+    "date": "2024-05-31",
+    "imdbId": "tt20247352"
+  },
+  {
+    "title": "Black Mirror: USS Callister",
+    "rating": 10,
+    "date": "2024-05-30",
+    "imdbId": "tt5710974"
+  },
+  {
+    "title": "Black Mirror: Demon 79",
+    "rating": 8,
+    "date": "2024-05-28",
+    "imdbId": "tt27731671"
+  },
+  {
+    "title": "Black Mirror: Mazey Day",
+    "rating": 5,
+    "date": "2024-05-28",
+    "imdbId": "tt27731663"
+  },
+  {
+    "title": "Black Mirror: Metalhead",
+    "rating": 7,
+    "date": "2024-05-26",
+    "imdbId": "tt5710984"
+  },
+  {
+    "title": "Pirates of the Caribbean - Am Ende der Welt",
+    "rating": 8,
+    "date": "2024-05-19",
+    "imdbId": "tt0449088"
+  },
+  {
+    "title": "Pirates of the Caribbean - Fluch der Karibik 2",
+    "rating": 6,
+    "date": "2024-05-11",
+    "imdbId": "tt0383574"
+  },
+  {
+    "title": "Fluch der Karibik",
+    "rating": 8,
+    "date": "2024-05-11",
+    "imdbId": "tt0325980"
+  },
+  {
+    "title": "Fallout",
+    "rating": 9,
+    "date": "2024-04-19",
+    "imdbId": "tt12637874"
+  },
+  {
+    "title": "3 Body Problem",
+    "rating": 6,
+    "date": "2024-04-18",
+    "imdbId": "tt13016388"
+  },
+  {
+    "title": "Ex Machina",
+    "rating": 10,
+    "date": "2024-04-12",
+    "imdbId": "tt0470752"
+  },
+  {
+    "title": "Chantal im Märchenland",
+    "rating": 1,
+    "date": "2024-04-11",
+    "imdbId": "tt27075304"
+  },
+  {
+    "title": "The Lego Movie",
+    "rating": 9,
+    "date": "2024-03-31",
+    "imdbId": "tt1490017"
+  },
+  {
+    "title": "Dune: Part Two",
+    "rating": 7,
+    "date": "2024-03-31",
+    "imdbId": "tt15239678"
+  },
+  {
+    "title": "Dune",
+    "rating": 7,
+    "date": "2024-03-30",
+    "imdbId": "tt1160419"
+  },
+  {
+    "title": "Everything Everywhere All at Once",
+    "rating": 9,
+    "date": "2024-03-23",
+    "imdbId": "tt6710474"
+  },
+  {
+    "title": "Sea of Thieves",
+    "rating": 8,
+    "date": "2024-02-17",
+    "imdbId": "tt4780496"
+  },
+  {
+    "title": "The Beekeeper",
+    "rating": 7,
+    "date": "2024-01-20",
+    "imdbId": "tt15314262"
+  },
+  {
+    "title": "No Hard Feelings",
+    "rating": 7,
+    "date": "2024-01-19",
+    "imdbId": "tt15671028"
+  },
+  {
+    "title": "Das Damengambit",
+    "rating": 10,
+    "date": "2024-01-15",
+    "imdbId": "tt10048342"
+  },
+  {
+    "title": "Rambo",
+    "rating": 10,
+    "date": "2024-01-03",
+    "imdbId": "tt0083944"
+  },
+  {
+    "title": "Star Wars: Episode III - Die Rache der Sith",
+    "rating": 9,
+    "date": "2023-12-31",
+    "imdbId": "tt0121766"
+  },
+  {
+    "title": "Monster",
+    "rating": 4,
+    "date": "2023-12-31",
+    "imdbId": "tt13207736"
+  },
+  {
+    "title": "Narcos: Mexico: Free Trade",
+    "rating": 10,
+    "date": "2023-12-31",
+    "imdbId": "tt11781736"
+  },
+  {
+    "title": "Interstellar",
+    "rating": 10,
+    "date": "2023-12-22",
     "imdbId": "tt0816692"
+  },
+  {
+    "title": "Haus des Geldes",
+    "rating": 9,
+    "date": "2023-12-21",
+    "imdbId": "tt6468322"
+  },
+  {
+    "title": "Grand Theft Auto: San Andreas",
+    "rating": 9,
+    "date": "2023-12-21",
+    "imdbId": "tt0383385"
+  },
+  {
+    "title": "Lego Star Wars: The Complete Saga",
+    "rating": 10,
+    "date": "2023-12-21",
+    "imdbId": "tt1149396"
+  },
+  {
+    "title": "1984",
+    "rating": 7,
+    "date": "2023-12-21",
+    "imdbId": "tt0048918"
+  },
+  {
+    "title": "Narcos: Mexico",
+    "rating": 8,
+    "date": "2023-12-21",
+    "imdbId": "tt8714904"
+  },
+  {
+    "title": "Clash of Clans",
+    "rating": 7,
+    "date": "2023-12-21",
+    "imdbId": "tt6318978"
+  },
+  {
+    "title": "Minecraft",
+    "rating": 10,
+    "date": "2023-12-02",
+    "imdbId": "tt2011970"
+  },
+  {
+    "title": "Squid Game: The Challenge",
+    "rating": 1,
+    "date": "2023-11-24",
+    "imdbId": "tt28104766"
+  },
+  {
+    "title": "Splitgate: Arena Warfare",
+    "rating": 8,
+    "date": "2023-11-23",
+    "imdbId": "tt10388974"
+  },
+  {
+    "title": "Overwatch 2",
+    "rating": 1,
+    "date": "2023-10-30",
+    "imdbId": "tt21040998"
+  },
+  {
+    "title": "Narcos",
+    "rating": 9,
+    "date": "2023-10-30",
+    "imdbId": "tt2707408"
+  },
+  {
+    "title": "Narcos: Descenso",
+    "rating": 9,
+    "date": "2023-10-26",
+    "imdbId": "tt3591824"
+  },
+  {
+    "title": "Thor: Love and Thunder",
+    "rating": 3,
+    "date": "2023-10-21",
+    "imdbId": "tt10648342"
+  },
+  {
+    "title": "No Man's Sky",
+    "rating": 8,
+    "date": "2023-10-19",
+    "imdbId": "tt3819090"
+  },
+  {
+    "title": "Detroit: Become Human",
+    "rating": 10,
+    "date": "2023-10-19",
+    "imdbId": "tt5158314"
+  },
+  {
+    "title": "Assassin's Creed: Valhalla",
+    "rating": 7,
+    "date": "2023-10-19",
+    "imdbId": "tt12235026"
+  },
+  {
+    "title": "Fortnite",
+    "rating": 9,
+    "date": "2023-10-04",
+    "imdbId": "tt8020008"
+  },
+  {
+    "title": "Watch Dogs 2",
+    "rating": 9,
+    "date": "2023-10-03",
+    "imdbId": "tt5788078"
+  },
+  {
+    "title": "The Expanse",
+    "rating": 7,
+    "date": "2023-10-02",
+    "imdbId": "tt3230854"
+  },
+  {
+    "title": "Mr. Robot",
+    "rating": 9,
+    "date": "2023-10-02",
+    "imdbId": "tt4158110"
+  },
+  {
+    "title": "Black Panther",
+    "rating": 7,
+    "date": "2023-10-02",
+    "imdbId": "tt1825683"
+  },
+  {
+    "title": "The Batman",
+    "rating": 9,
+    "date": "2023-10-02",
+    "imdbId": "tt1877830"
+  },
+  {
+    "title": "Avatar - Aufbruch nach Pandora",
+    "rating": 9,
+    "date": "2023-10-02",
+    "imdbId": "tt0499549"
+  },
+  {
+    "title": "WandaVision",
+    "rating": 9,
+    "date": "2023-10-02",
+    "imdbId": "tt9140560"
+  },
+  {
+    "title": "Guardians of the Galaxy",
+    "rating": 7,
+    "date": "2023-10-02",
+    "imdbId": "tt2015381"
+  },
+  {
+    "title": "Star Wars: The Clone Wars",
+    "rating": 10,
+    "date": "2023-10-02",
+    "imdbId": "tt1185834"
+  },
+  {
+    "title": "Das Buch von Boba Fett",
+    "rating": 7,
+    "date": "2023-10-02",
+    "imdbId": "tt13668894"
+  },
+  {
+    "title": "The Mandalorian",
+    "rating": 9,
+    "date": "2023-10-02",
+    "imdbId": "tt8111088"
+  },
+  {
+    "title": "Squid Game",
+    "rating": 8,
+    "date": "2023-10-02",
+    "imdbId": "tt10919420"
+  },
+  {
+    "title": "Conjuring 3 - Im Bann des Teufels",
+    "rating": 3,
+    "date": "2023-10-02",
+    "imdbId": "tt7069210"
+  },
+  {
+    "title": "The First Avenger: Civil War",
+    "rating": 8,
+    "date": "2023-10-01",
+    "imdbId": "tt3498820"
+  },
+  {
+    "title": "Ant-Man",
+    "rating": 8,
+    "date": "2023-10-01",
+    "imdbId": "tt0478970"
+  },
+  {
+    "title": "The Vampire Diaries",
+    "rating": 8,
+    "date": "2023-10-01",
+    "imdbId": "tt1405406"
+  },
+  {
+    "title": "Grand Theft Auto V",
+    "rating": 10,
+    "date": "2023-10-01",
+    "imdbId": "tt2103188"
+  },
+  {
+    "title": "Love, Death & Robots",
+    "rating": 10,
+    "date": "2023-10-01",
+    "imdbId": "tt9561862"
+  },
+  {
+    "title": "Phantastische Tierwesen: Dumbledores Geheimnisse",
+    "rating": 7,
+    "date": "2023-10-01",
+    "imdbId": "tt4123432"
+  },
+  {
+    "title": "Avengers: Age of Ultron",
+    "rating": 7,
+    "date": "2023-09-30",
+    "imdbId": "tt2395427"
+  },
+  {
+    "title": "The Avengers",
+    "rating": 8,
+    "date": "2023-09-30",
+    "imdbId": "tt0848228"
+  },
+  {
+    "title": "Guardians of the Galaxy Vol. 3",
+    "rating": 7,
+    "date": "2023-09-29",
+    "imdbId": "tt6791350"
+  },
+  {
+    "title": "Deadpool 2",
+    "rating": 8,
+    "date": "2023-08-04",
+    "imdbId": "tt5463162"
+  },
+  {
+    "title": "WALL·E - Der Letzte räumt die Erde auf",
+    "rating": 9,
+    "date": "2023-08-04",
+    "imdbId": "tt0910970"
+  },
+  {
+    "title": "Deadpool",
+    "rating": 9,
+    "date": "2023-08-04",
+    "imdbId": "tt1431045"
+  },
+  {
+    "title": "Die Pinguine aus Madagascar",
+    "rating": 8,
+    "date": "2023-08-03",
+    "imdbId": "tt1911658"
+  },
+  {
+    "title": "Madagascar 3: Flucht durch Europa",
+    "rating": 8,
+    "date": "2023-08-03",
+    "imdbId": "tt1277953"
+  },
+  {
+    "title": "Madagascar 2",
+    "rating": 8,
+    "date": "2023-08-03",
+    "imdbId": "tt0479952"
+  },
+  {
+    "title": "Madagascar",
+    "rating": 8,
+    "date": "2023-08-03",
+    "imdbId": "tt0351283"
+  },
+  {
+    "title": "Ready Player One",
+    "rating": 10,
+    "date": "2023-08-03",
+    "imdbId": "tt1677720"
+  },
+  {
+    "title": "BoJack Horseman",
+    "rating": 8,
+    "date": "2023-08-03",
+    "imdbId": "tt3398228"
+  },
+  {
+    "title": "Breaking Bad",
+    "rating": 10,
+    "date": "2023-08-03",
+    "imdbId": "tt0903747"
+  },
+  {
+    "title": "The Suicide Squad",
+    "rating": 6,
+    "date": "2023-08-02",
+    "imdbId": "tt6334354"
+  },
+  {
+    "title": "Barbie",
+    "rating": 7,
+    "date": "2023-08-01",
+    "imdbId": "tt1517268"
+  },
+  {
+    "title": "Arcane",
+    "rating": 7,
+    "date": "2023-08-01",
+    "imdbId": "tt11126994"
+  },
+  {
+    "title": "Rick and Morty",
+    "rating": 8,
+    "date": "2023-08-01",
+    "imdbId": "tt2861424"
+  },
+  {
+    "title": "Star Wars: Rogue One",
+    "rating": 8,
+    "date": "2023-08-01",
+    "imdbId": "tt3748528"
+  },
+  {
+    "title": "Avengers: Infinity War",
+    "rating": 8,
+    "date": "2023-08-01",
+    "imdbId": "tt4154756"
+  },
+  {
+    "title": "Avengers: Endgame",
+    "rating": 9,
+    "date": "2023-08-01",
+    "imdbId": "tt4154796"
+  },
+  {
+    "title": "Invincible",
+    "rating": 9,
+    "date": "2023-08-01",
+    "imdbId": "tt6741278"
+  },
+  {
+    "title": "Dungeons & Dragons: Ehre unter Dieben",
+    "rating": 5,
+    "date": "2023-07-30",
+    "imdbId": "tt2906216"
+  },
+  {
+    "title": "Upload",
+    "rating": 6,
+    "date": "2023-07-25",
+    "imdbId": "tt7826376"
+  },
+  {
+    "title": "The Flash",
+    "rating": 6,
+    "date": "2023-07-25",
+    "imdbId": "tt3107288"
+  },
+  {
+    "title": "The Outpost",
+    "rating": 8,
+    "date": "2023-07-25",
+    "imdbId": "tt7612548"
+  },
+  {
+    "title": "Avatar: The Way of Water",
+    "rating": 9,
+    "date": "2023-07-25",
+    "imdbId": "tt1630029"
+  },
+  {
+    "title": "Der König der Löwen",
+    "rating": 8,
+    "date": "2023-07-25",
+    "imdbId": "tt0110357"
+  },
+  {
+    "title": "Parasite",
+    "rating": 9,
+    "date": "2023-07-25",
+    "imdbId": "tt6751668"
+  },
+  {
+    "title": "She-Hulk: Die Anwältin",
+    "rating": 1,
+    "date": "2023-07-23",
+    "imdbId": "tt10857160"
+  },
+  {
+    "title": "Cyberpunk: Edgerunners",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt12590266"
+  },
+  {
+    "title": "Spider-Man: No Way Home",
+    "rating": 8,
+    "date": "2023-07-23",
+    "imdbId": "tt10872600"
+  },
+  {
+    "title": "Spider-Man: A New Universe",
+    "rating": 8,
+    "date": "2023-07-23",
+    "imdbId": "tt4633694"
+  },
+  {
+    "title": "Spider-Man: Across the Spider-Verse",
+    "rating": 9,
+    "date": "2023-07-23",
+    "imdbId": "tt9362722"
+  },
+  {
+    "title": "The Playlist",
+    "rating": 8,
+    "date": "2023-07-23",
+    "imdbId": "tt11564258"
+  },
+  {
+    "title": "Black Mirror",
+    "rating": 9,
+    "date": "2023-07-23",
+    "imdbId": "tt2085059"
+  },
+  {
+    "title": "eXistenZ",
+    "rating": 5,
+    "date": "2023-07-23",
+    "imdbId": "tt0120907"
+  },
+  {
+    "title": "Matrix",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt0133093"
+  },
+  {
+    "title": "Drei Haselnüsse für Aschenbrödel",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt0070832"
+  },
+  {
+    "title": "Bullet Train",
+    "rating": 7,
+    "date": "2023-07-23",
+    "imdbId": "tt12593682"
+  },
+  {
+    "title": "Es",
+    "rating": 1,
+    "date": "2023-07-23",
+    "imdbId": "tt1396484"
+  },
+  {
+    "title": "Smile - Siehst du es auch?",
+    "rating": 5,
+    "date": "2023-07-23",
+    "imdbId": "tt15474916"
+  },
+  {
+    "title": "Doctor Strange in the Multiverse of Madness",
+    "rating": 3,
+    "date": "2023-07-23",
+    "imdbId": "tt9419884"
+  },
+  {
+    "title": "Alita: Battle Angel",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt0437086"
+  },
+  {
+    "title": "Obi-Wan Kenobi",
+    "rating": 8,
+    "date": "2023-07-23",
+    "imdbId": "tt8466564"
+  },
+  {
+    "title": "Star Wars - Episode VIII: Die letzten Jedi",
+    "rating": 3,
+    "date": "2023-07-23",
+    "imdbId": "tt2527336"
+  },
+  {
+    "title": "Star Wars: Episode VII - Das Erwachen der Macht",
+    "rating": 3,
+    "date": "2023-07-23",
+    "imdbId": "tt2488496"
+  },
+  {
+    "title": "Star Wars: Episode II - Angriff der Klonkrieger",
+    "rating": 7,
+    "date": "2023-07-23",
+    "imdbId": "tt0121765"
+  },
+  {
+    "title": "Star Wars: Episode VI - Die Rückkehr der Jedi-Ritter",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt0086190"
+  },
+  {
+    "title": "Star Wars: Episode V - Das Imperium schlägt zurück",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt0080684"
+  },
+  {
+    "title": "Krieg der Sterne",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt0076759"
+  },
+  {
+    "title": "Star Wars: Episode I - Die dunkle Bedrohung",
+    "rating": 7,
+    "date": "2023-07-23",
+    "imdbId": "tt0120915"
+  },
+  {
+    "title": "Star Wars: The Bad Batch",
+    "rating": 8,
+    "date": "2023-07-23",
+    "imdbId": "tt12708542"
+  },
+  {
+    "title": "Star Wars - Episode IX: Der Aufstieg Skywalkers",
+    "rating": 3,
+    "date": "2023-07-23",
+    "imdbId": "tt2527338"
+  },
+  {
+    "title": "Star Wars: The Clone Wars",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt0458290"
+  },
+  {
+    "title": "Star Wars Rebels",
+    "rating": 8,
+    "date": "2023-07-23",
+    "imdbId": "tt2930604"
+  },
+  {
+    "title": "Chernobyl",
+    "rating": 9,
+    "date": "2023-07-23",
+    "imdbId": "tt7366338"
+  },
+  {
+    "title": "Better Call Saul",
+    "rating": 10,
+    "date": "2023-07-23",
+    "imdbId": "tt3032476"
+  },
+  {
+    "title": "Oppenheimer",
+    "rating": 8,
+    "date": "2023-07-23",
+    "imdbId": "tt15398776"
   }
 ]

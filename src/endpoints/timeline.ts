@@ -22,7 +22,7 @@ export class Timeline extends OpenAPIRoute {
 
     const events = await cached(env.API_CACHE, "timeline:v1", 900, async () => {
       const results = await Promise.allSettled([
-        fetchGitHub(env.GITHUB_USER),
+        fetchGitHub(env.GITHUB_USER, env.GITHUB_TOKEN),
         fetchWikipedia(env.WIKI_USER),
         fetchBlog(env.BLOG_FEED),
         fetchGallery(),
