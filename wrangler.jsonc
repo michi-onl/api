@@ -7,6 +7,11 @@
     "enabled": true,
   },
   "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "public",
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+  },
   "vars": {
     "GITHUB_USER": "michi-onl",
     "WIKI_USER": "Mike_is_Michi",

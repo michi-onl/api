@@ -1,6 +1,7 @@
 import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import type { AppContext } from "../types";
+import { cached } from "../cache";
 
 const MAX_REPOS = 8;
 const GITHUB_REPO_RE = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
@@ -64,22 +65,27 @@ export class GitHubReleases extends OpenAPIRoute {
       .filter(Boolean)
       .slice(0, MAX_REPOS);
 
-    const settled = await Promise.allSettled(
-      repoList.map((repo) => fetchRelease(repo)),
-    );
+    const cacheKey = `gh-releases:${[...repoList].sort().join(",")}`;
+    const data = await cached(c.env.API_CACHE, cacheKey, 3600, async () => {
+      const settled = await Promise.allSettled(
+        repoList.map((repo) => fetchRelease(repo)),
+      );
 
-    const results = repoList.map((repo, i) => {
-      const r = settled[i];
-      return r.status === "fulfilled"
-        ? r.value
-        : { repo, error: "Failed to fetch release" };
+      const results = repoList.map((repo, i) => {
+        const r = settled[i];
+        return r.status === "fulfilled"
+          ? r.value
+          : { repo, error: "Failed to fetch release" };
+      });
+
+      return {
+        source: "GitHub Releases",
+        count: results.length,
+        releases: results,
+      };
     });
 
-    return c.json({
-      source: "GitHub Releases",
-      count: results.length,
-      releases: results,
-    });
+    return c.json(data);
   }
 }
 

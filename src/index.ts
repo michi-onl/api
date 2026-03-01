@@ -15,7 +15,11 @@ const app = new Hono<{ Bindings: Env }>();
 app.use(
   "*",
   cors({
-    origin: "https://www.michi.onl",
+    origin: (origin) => {
+      if (origin === "https://www.michi.onl") return origin;
+      if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) return origin;
+      return "https://www.michi.onl";
+    },
     allowMethods: ["GET", "POST", "OPTIONS"],
   }),
 );
@@ -39,9 +43,9 @@ const openapi = fromHono(app, {
       { name: "Music", description: "Billboard chart data" },
       { name: "Tech", description: "Hacker News and GitHub data" },
       { name: "Gaming", description: "Steam profile data" },
-      { name: "Media", description: "IMDb ratings and watchlist" },
+      { name: "Movies & TV", description: "IMDb ratings and watchlist" },
       { name: "Timeline", description: "Aggregated timeline events" },
-      { name: "Wiki", description: "Wikipedia watchlist data" },
+      { name: "Wikipedia", description: "Wikipedia watchlist data" },
     ],
   },
 });

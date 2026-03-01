@@ -2,6 +2,7 @@ import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
+import { cached } from "../cache";
 
 const MAX_PROFILES = 8;
 const MAX_GAMES = 10;
@@ -70,26 +71,30 @@ export class SteamProfiles extends OpenAPIRoute {
       .filter(Boolean)
       .slice(0, MAX_PROFILES);
 
-    const settled = await Promise.allSettled(
-      profileList.map((name) => fetchSteamProfile(name)),
-    );
+    const cacheKey = `steam:${[...profileList].sort().join(",")}`;
+    const data = await cached(c.env.API_CACHE, cacheKey, 21600, async () => {
+      const settled = await Promise.allSettled(
+        profileList.map((name) => fetchSteamProfile(name)),
+      );
 
-    const results: Record<string, unknown> = {};
-    for (let i = 0; i < profileList.length; i++) {
-      const r = settled[i];
-      results[profileList[i]] =
-        r.status === "fulfilled"
-          ? r.value
-          : {
-              profileName: profileList[i],
-              profileUrl: "",
-              recentGames: [],
-              totalGames: 0,
-              error: "Failed to fetch profile",
-            };
-    }
+      const results: Record<string, unknown> = {};
+      for (let i = 0; i < profileList.length; i++) {
+        const r = settled[i];
+        results[profileList[i]] =
+          r.status === "fulfilled"
+            ? r.value
+            : {
+                profileName: profileList[i],
+                profileUrl: "",
+                recentGames: [],
+                totalGames: 0,
+                error: "Failed to fetch profile",
+              };
+      }
+      return results;
+    });
 
-    return c.json(results);
+    return c.json(data);
   }
 }
 

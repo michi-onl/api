@@ -37,7 +37,7 @@ const ImdbResponseSchema = z.object({
 
 export class ImdbPopular extends OpenAPIRoute {
   schema = {
-    tags: ["Entertainment"],
+    tags: ["Movies & TV"],
     summary: "IMDb most popular movies and TV shows",
     responses: {
       "200": {

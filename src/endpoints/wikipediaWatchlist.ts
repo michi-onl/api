@@ -2,6 +2,7 @@ import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
+import { cached } from "../cache";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
@@ -100,41 +101,47 @@ export class WikipediaWatchlist extends OpenAPIRoute {
     }
 
     const langList = languages.split(",").map((l) => l.trim()).filter(Boolean);
-    const allEdits: Record<string, unknown>[] = [];
-    const errors: Record<string, unknown>[] = [];
 
-    const settled = await Promise.allSettled(
-      langList.map((lang) =>
-        fetchWatchlist(lang, usernameDict[lang], tokenDict[lang], hours, limit),
-      ),
-    );
+    const cacheKey = `wiki:${[...langList].sort().join(",")}_${Object.keys(usernameDict).sort().join(",")}_${hours}_${limit}`;
+    const data = await cached(c.env.API_CACHE, cacheKey, 3600, async () => {
+      const allEdits: Record<string, unknown>[] = [];
+      const errors: Record<string, unknown>[] = [];
 
-    for (let i = 0; i < langList.length; i++) {
-      const r = settled[i];
-      if (r.status === "fulfilled") {
-        allEdits.push(...r.value);
-      } else {
-        errors.push({
-          language: langList[i],
-          error: `Failed to fetch ${langList[i]} watchlist`,
-        });
+      const settled = await Promise.allSettled(
+        langList.map((lang) =>
+          fetchWatchlist(lang, usernameDict[lang], tokenDict[lang], hours, limit),
+        ),
+      );
+
+      for (let i = 0; i < langList.length; i++) {
+        const r = settled[i];
+        if (r.status === "fulfilled") {
+          allEdits.push(...r.value);
+        } else {
+          errors.push({
+            language: langList[i],
+            error: `Failed to fetch ${langList[i]} watchlist`,
+          });
+        }
       }
-    }
 
-    // Sort by published date descending
-    allEdits.sort((a, b) => {
-      const da = a.publishedAt as string;
-      const db = b.publishedAt as string;
-      if (!da || !db) return 0;
-      return db.localeCompare(da);
+      // Sort by published date descending
+      allEdits.sort((a, b) => {
+        const da = a.publishedAt as string;
+        const db = b.publishedAt as string;
+        if (!da || !db) return 0;
+        return db.localeCompare(da);
+      });
+
+      return {
+        source: "Wikipedia Watchlist",
+        count: allEdits.length,
+        edits: allEdits.slice(0, limit),
+        errors: errors.length ? errors : null,
+      };
     });
 
-    return c.json({
-      source: "Wikipedia Watchlist",
-      count: allEdits.length,
-      edits: allEdits.slice(0, limit),
-      errors: errors.length ? errors : null,
-    });
+    return c.json(data);
   }
 }
 
