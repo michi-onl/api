@@ -92,7 +92,7 @@ export class SteamProfiles extends OpenAPIRoute {
               };
       }
       return results;
-    });
+    }, (result) => !Object.values(result).some((v: unknown) => (v as Record<string, unknown>)?.error));
 
     return c.json(data);
   }
@@ -196,12 +196,8 @@ function parseSteamGame(
       ? `last played on ${lastPlayedShort}`
       : "N/A";
 
-  const gameLink =
-    $el.find(".game_name a").first().length
-      ? $el.find(".game_name a").first()
-      : $el.find(".recent_game_content .game_name a").first();
   let appId: string | null = null;
-  const href = gameLink.attr("href");
+  const href = nameLink.attr("href");
   if (href) {
     const m = STEAM_APP_ID_RE.exec(href);
     if (m) appId = m[1];

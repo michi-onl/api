@@ -102,7 +102,11 @@ export class WikipediaWatchlist extends OpenAPIRoute {
 
     const langList = languages.split(",").map((l) => l.trim()).filter(Boolean);
 
-    const cacheKey = `wiki:${[...langList].sort().join(",")}_${Object.keys(usernameDict).sort().join(",")}_${hours}_${limit}`;
+    const usernamesPart = Object.entries(usernameDict)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}:${v}`)
+      .join(",");
+    const cacheKey = `wiki:${[...langList].sort().join(",")}_${usernamesPart}_${hours}_${limit}`;
     const data = await cached(c.env.API_CACHE, cacheKey, 3600, async () => {
       const allEdits: Record<string, unknown>[] = [];
       const errors: Record<string, unknown>[] = [];
@@ -139,7 +143,13 @@ export class WikipediaWatchlist extends OpenAPIRoute {
         edits: allEdits.slice(0, limit),
         errors: errors.length ? errors : null,
       };
-    });
+    }, (result) => !result.errors);
+
+    // Recompute timeAgo from cached publishedAt so it stays fresh
+    for (const edit of data.edits) {
+      const pub = edit.publishedAt as string;
+      if (pub) edit.timeAgo = formatTimeAgo(pub);
+    }
 
     return c.json(data);
   }

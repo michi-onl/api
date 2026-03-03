@@ -83,7 +83,13 @@ export class GitHubReleases extends OpenAPIRoute {
         count: results.length,
         releases: results,
       };
-    });
+    }, (result) => result.releases.every((r: Record<string, unknown>) => !r.error));
+
+    // Recompute timeAgo from cached publishedAt so it stays fresh
+    for (const r of data.releases as Record<string, unknown>[]) {
+      const pub = r.publishedAt as string;
+      if (pub) r.timeAgo = formatTimeAgo(pub);
+    }
 
     return c.json(data);
   }
