@@ -13,9 +13,9 @@
     "not_found_handling": "none",
   },
   "vars": {
-    "GITHUB_USER": "michi-onl",
-    "WIKI_USER": "Mike_is_Michi",
-    "BLOG_FEED": "https://www.michi.onl/atom.xml",
+    "GITHUB_USER": "",
+    "WIKI_USER": "",
+    "BLOG_FEED": "",
   },
   "kv_namespaces": [
     {

@@ -41,7 +41,7 @@ export class WikipediaWatchlist extends OpenAPIRoute {
               usernames: z
                 .string()
                 .describe(
-                  'Format "lang:username,lang2:username2" e.g. "de:Mike_is_Michi"',
+                  'Format "lang:username,lang2:username2" e.g. "de:username"',
                 ),
               tokens: z
                 .string()
@@ -79,7 +79,7 @@ export class WikipediaWatchlist extends OpenAPIRoute {
           error:
             "Missing required parameters. Provide usernames and tokens in POST body.",
           example:
-            "POST with body: usernames=de:Mike_is_Michi&tokens=de:abc123&languages=de",
+            "POST with body: usernames=de:username&tokens=de:abc123&languages=de",
         },
         400,
       );
