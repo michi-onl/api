@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
+import { safeInt } from "../utils";
 
 const MAX_ITEMS = 25;
 const USER_AGENT =
@@ -22,6 +23,9 @@ const ImdbItemSchema = z.object({
   href: z.string().describe("IMDb URL"),
   rating: z.string().describe("IMDb rating"),
   numVotes: z.string().describe("Number of votes"),
+  description: z.string().describe("Short synopsis"),
+  image: z.string().describe("Poster/thumbnail URL"),
+  genre: z.string().describe("Genre tags"),
 });
 
 const ImdbCategorySchema = z.object({
@@ -73,13 +77,46 @@ async function fetchImdb() {
   return results;
 }
 
+const IMDB_TITLE_RE = /\/title\/(tt\d+)/;
+
+interface JsonLdItem {
+  "@type": string;
+  url?: string;
+  name?: string;
+  description?: string;
+  image?: string;
+  genre?: string;
+  aggregateRating?: { ratingValue?: number; ratingCount?: number };
+  contentRating?: string;
+  duration?: string;
+}
+
 async function fetchCategory(key: string, url: string) {
   const res = await fetch(url, {
     headers: { "User-Agent": USER_AGENT },
   });
   if (!res.ok) throw new Error(`IMDB ${key} fetch failed: ${res.status}`);
 
-  const $ = cheerio.load(await res.text());
+  const html = await res.text();
+  const $ = cheerio.load(html);
+
+  // Parse JSON-LD for rich metadata
+  const jsonLdMap = new Map<string, JsonLdItem>();
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const data = JSON.parse($(el).text());
+      if (data?.itemListElement) {
+        for (const entry of data.itemListElement) {
+          const item = entry?.item as JsonLdItem | undefined;
+          if (item?.url) {
+            const id = item.url.match(IMDB_TITLE_RE)?.[1];
+            if (id) jsonLdMap.set(id, item);
+          }
+        }
+      }
+    } catch {}
+  });
+
   const topItems: Record<string, unknown>[] = [];
 
   $("li.ipc-metadata-list-summary-item")
@@ -118,7 +155,23 @@ async function fetchCategory(key: string, url: string) {
       if (href !== "N/A" && href.startsWith("/"))
         href = `https://www.imdb.com${href}`;
 
-      topItems.push({ title, rank, year, length, age, href, rating, numVotes });
+      // Enrich with JSON-LD data
+      const titleId = href.match(IMDB_TITLE_RE)?.[1];
+      const ld = titleId ? jsonLdMap.get(titleId) : undefined;
+
+      topItems.push({
+        title,
+        rank,
+        year,
+        length,
+        age: ld?.contentRating || age,
+        href,
+        rating: ld?.aggregateRating?.ratingValue?.toString() || rating,
+        numVotes: ld?.aggregateRating?.ratingCount?.toLocaleString() || numVotes,
+        description: ld?.description || "",
+        image: ld?.image || "",
+        genre: ld?.genre || "",
+      });
     });
 
   const dataTitle =
@@ -129,7 +182,3 @@ async function fetchCategory(key: string, url: string) {
   return { data_title: dataTitle, data_desc: dataDesc, data: topItems };
 }
 
-function safeInt(text: string, fallback = 0): number {
-  const n = parseInt(text.replace(/,/g, "").trim(), 10);
-  return isNaN(n) ? fallback : n;
-}

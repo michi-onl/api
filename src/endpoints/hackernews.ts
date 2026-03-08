@@ -17,6 +17,7 @@ const HNStorySchema = z.object({
   points: z.number().describe("Upvote count"),
   author: z.string().describe("Author username"),
   timePosted: z.string().describe("Relative time since posted"),
+  timestamp: z.string().describe("Exact UTC timestamp (ISO 8601)"),
   numComments: z.number().describe("Number of comments"),
   hnUrl: z.string().describe("Hacker News discussion URL"),
 });
@@ -83,7 +84,10 @@ async function fetchHN() {
       }
 
       const author = subtext.find("a.hnuser").text().trim() || "N/A";
-      const timePosted = subtext.find("span.age").text().trim() || "N/A";
+      const ageSpan = subtext.find("span.age");
+      const timePosted = ageSpan.text().trim() || "N/A";
+      const rawTimestamp = ageSpan.attr("title") || "";
+      const timestamp = rawTimestamp.split(" ")[0] || "";
 
       let numComments = 0;
       const links = subtext.find("a");
@@ -105,6 +109,7 @@ async function fetchHN() {
         points,
         author,
         timePosted,
+        timestamp,
         numComments,
         hnUrl,
       });

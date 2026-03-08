@@ -2,9 +2,26 @@ import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
+import { formatTimeAgo } from "../utils";
 
 const MAX_REPOS = 8;
 const GITHUB_REPO_RE = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
+
+const ReleaseAssetSchema = z.object({
+  name: z.string().describe("Asset filename"),
+  downloadUrl: z.string().describe("Browser download URL"),
+  size: z.number().describe("Asset size in bytes"),
+  contentType: z.string().describe("MIME type"),
+  downloadCount: z.number().describe("Number of downloads"),
+});
+
+const ReactionsSchema = z.object({
+  totalCount: z.number(),
+  "+1": z.number(),
+  heart: z.number(),
+  hooray: z.number(),
+  rocket: z.number(),
+});
 
 const ReleaseSchema = z.object({
   repo: z.string().describe("Repository in owner/repo format"),
@@ -14,10 +31,13 @@ const ReleaseSchema = z.object({
   publishedAt: z.string().describe("ISO 8601 publish date"),
   timeAgo: z.string().describe("Human-readable time since publish"),
   author: z.string().describe("Release author login"),
+  authorAvatarUrl: z.string().describe("Author avatar URL"),
   url: z.string().describe("Release page URL"),
   isPrerelease: z.boolean(),
   isDraft: z.boolean(),
   body: z.string().describe("Release notes (truncated to 500 chars)"),
+  reactions: ReactionsSchema.nullable().describe("Reaction counts"),
+  assets: z.array(ReleaseAssetSchema).describe("Downloadable assets"),
 });
 
 const ReleasesResponseSchema = z.object({
@@ -122,6 +142,10 @@ async function fetchRelease(repo: string) {
   const publishedAt = (data.published_at as string) || "";
   const timeAgo = publishedAt ? formatTimeAgo(publishedAt) : "unknown";
 
+  const authorObj = data.author as Record<string, string> | undefined;
+  const reactionsObj = data.reactions as Record<string, number> | undefined;
+  const assetsArr = (data.assets as Record<string, unknown>[]) || [];
+
   return {
     repo,
     repoUrl: `https://github.com/${repo}`,
@@ -129,37 +153,28 @@ async function fetchRelease(repo: string) {
     tagName: data.tag_name || "",
     publishedAt,
     timeAgo,
-    author: (data.author as Record<string, string>)?.login || "N/A",
+    author: authorObj?.login || "N/A",
+    authorAvatarUrl: authorObj?.avatar_url || "",
     url: data.html_url || "",
     isPrerelease: data.prerelease || false,
     isDraft: data.draft || false,
     body: ((data.body as string) || "").slice(0, 500),
+    reactions: reactionsObj
+      ? {
+          totalCount: reactionsObj.total_count ?? 0,
+          "+1": reactionsObj["+1"] ?? 0,
+          heart: reactionsObj.heart ?? 0,
+          hooray: reactionsObj.hooray ?? 0,
+          rocket: reactionsObj.rocket ?? 0,
+        }
+      : null,
+    assets: assetsArr.slice(0, 10).map((a) => ({
+      name: (a.name as string) || "",
+      downloadUrl: (a.browser_download_url as string) || "",
+      size: (a.size as number) || 0,
+      contentType: (a.content_type as string) || "",
+      downloadCount: (a.download_count as number) || 0,
+    })),
   };
 }
 
-function formatTimeAgo(isoDate: string): string {
-  const dt = new Date(isoDate);
-  const now = Date.now();
-  const seconds = Math.floor((now - dt.getTime()) / 1000);
-
-  if (seconds < 0) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(seconds / 3600);
-  const days = Math.floor(seconds / 86400);
-
-  if (minutes < 1) return "just now";
-  if (hours < 1) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days === 1) return "yesterday";
-  if (days < 7) return `${days} days ago`;
-  if (days < 30) {
-    const weeks = Math.floor(days / 7);
-    return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
-  }
-  if (days < 365) {
-    const months = Math.floor(days / 30);
-    return `${months} month${months > 1 ? "s" : ""} ago`;
-  }
-  const years = Math.floor(days / 365);
-  return `${years} year${years > 1 ? "s" : ""} ago`;
-}

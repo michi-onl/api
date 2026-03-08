@@ -24,11 +24,14 @@ const SteamGameSchema = z.object({
   lastPlayedShort: z.string().describe("Short last played date"),
   appId: z.string().nullable().describe("Steam app ID"),
   iconUrl: z.string().nullable().describe("Game icon URL"),
+  storeUrl: z.string().nullable().describe("Steam store page URL"),
 });
 
 const SteamProfileSchema = z.object({
   profileName: z.string().describe("Display name"),
   profileUrl: z.string().describe("Steam profile URL"),
+  avatarUrl: z.string().nullable().describe("Profile avatar image URL"),
+  status: z.string().describe("Online status (online, offline, in-game)"),
   recentGames: z.array(SteamGameSchema),
   totalGames: z.number().nullable().describe("Total games owned"),
 });
@@ -121,11 +124,26 @@ async function fetchSteamProfile(profileName: string) {
     return {
       profileName,
       profileUrl,
+      avatarUrl: null,
+      status: "private",
       recentGames: [],
       totalGames: 0,
-      status: "private",
     };
   }
+
+  // Extract avatar URL
+  const avatarPicture = $(".playerAvatar picture source").first();
+  let avatarUrl: string | null = avatarPicture.attr("srcset") || null;
+  if (!avatarUrl) {
+    avatarUrl = $(".playerAvatar img").first().attr("src") || null;
+  }
+
+  // Extract online status from playerAvatar div classes
+  const avatarDiv = $(".playerAvatar").first();
+  const avatarClasses = avatarDiv.attr("class") || "";
+  let status = "offline";
+  if (avatarClasses.includes("in-game")) status = "in-game";
+  else if (avatarClasses.includes("online")) status = "online";
 
   const recentGames: Record<string, unknown>[] = [];
 
@@ -164,6 +182,8 @@ async function fetchSteamProfile(profileName: string) {
   return {
     profileName: actualName,
     profileUrl,
+    avatarUrl,
+    status,
     recentGames: recentGames.slice(0, MAX_GAMES),
     totalGames,
   };
@@ -171,12 +191,11 @@ async function fetchSteamProfile(profileName: string) {
 
 function parseSteamGame(
   $: cheerio.CheerioAPI,
-  $el: cheerio.Cheerio<cheerio.AnyNode>,
+  $el: ReturnType<cheerio.CheerioAPI>,
 ) {
-  const nameLink =
-    $el.find(".game_name a").first().length
-      ? $el.find(".game_name a").first()
-      : $el.find(".recent_game_content .game_name a").first();
+  let nameLink = $el.find(".game_name a").first();
+  if (!nameLink.length)
+    nameLink = $el.find(".recent_game_content .game_name a").first();
   const name = nameLink.text().trim();
 
   let gameInfoText = $el.find(".game_info_details").first().text().trim();
@@ -203,9 +222,8 @@ function parseSteamGame(
     if (m) appId = m[1];
   }
 
-  const iconImg = $el.find(".game_info_cap img").first().length
-    ? $el.find(".game_info_cap img").first()
-    : $el.find("img").first();
+  let iconImg = $el.find(".game_info_cap img").first();
+  if (!iconImg.length) iconImg = $el.find("img").first();
   const iconUrl = iconImg.attr("src") || null;
 
   if (!name) return null;
@@ -218,6 +236,7 @@ function parseSteamGame(
     lastPlayedShort,
     appId,
     iconUrl,
+    storeUrl: appId ? `https://store.steampowered.com/app/${appId}` : null,
   };
 }
 

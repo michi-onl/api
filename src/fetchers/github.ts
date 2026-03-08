@@ -9,6 +9,9 @@ interface GitHubEvent {
     action?: string;
     number?: number;
     pull_request?: { title?: string; html_url?: string; number?: number };
+    issue?: { title?: string; html_url?: string; number?: number };
+    ref?: string;
+    ref_type?: string;
   };
 }
 
@@ -38,24 +41,48 @@ export async function fetchGitHub(
 
   const result: TimelineEvent[] = [];
 
-  // PR events
+  // PR, Issue, and Create events
   if (eventsRes.ok) {
     const events: GitHubEvent[] = await eventsRes.json();
     for (const e of events) {
-      if (e.type !== "PullRequestEvent" || !e.payload.pull_request) continue;
-      const pr = e.payload.pull_request;
-      const num = e.payload.number ?? pr.number;
-      const action = e.payload.action ?? "opened";
-      const title = pr.title
-        ? `PR: ${pr.title}`
-        : `${action} PR #${num} in ${e.repo.name}`;
-      result.push({
-        id: `github:${e.id}`,
-        date: e.created_at,
-        source: "github",
-        title,
-        url: pr.html_url ?? `https://github.com/${e.repo.name}/pull/${num}`,
-      });
+      if (e.type === "PullRequestEvent" && e.payload.pull_request) {
+        const pr = e.payload.pull_request;
+        const num = e.payload.number ?? pr.number;
+        const action = e.payload.action ?? "opened";
+        const title = pr.title
+          ? `PR: ${pr.title}`
+          : `${action} PR #${num} in ${e.repo.name}`;
+        result.push({
+          id: `github:${e.id}`,
+          date: e.created_at,
+          source: "github",
+          title,
+          url: pr.html_url ?? `https://github.com/${e.repo.name}/pull/${num}`,
+        });
+      } else if (e.type === "IssuesEvent" && e.payload.issue) {
+        const issue = e.payload.issue;
+        const action = e.payload.action ?? "opened";
+        const title = issue.title
+          ? `Issue ${action}: ${issue.title}`
+          : `${action} issue #${issue.number} in ${e.repo.name}`;
+        result.push({
+          id: `github:${e.id}`,
+          date: e.created_at,
+          source: "github",
+          title,
+          url:
+            issue.html_url ??
+            `https://github.com/${e.repo.name}/issues/${issue.number}`,
+        });
+      } else if (e.type === "CreateEvent" && e.payload.ref_type === "tag") {
+        result.push({
+          id: `github:${e.id}`,
+          date: e.created_at,
+          source: "github",
+          title: `Tagged ${e.payload.ref} in ${e.repo.name}`,
+          url: `https://github.com/${e.repo.name}/releases/tag/${e.payload.ref}`,
+        });
+      }
     }
   }
 

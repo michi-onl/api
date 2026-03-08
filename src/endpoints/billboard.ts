@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
+import { safeInt } from "../utils";
 
 const MAX_ITEMS = 6;
 const USER_AGENT =
@@ -12,6 +13,7 @@ const BillboardItemSchema = z.object({
   position: z.number().describe("Chart position"),
   title: z.string().describe("Album title"),
   artist: z.string().describe("Artist name"),
+  cover: z.string().describe("Album cover image URL"),
   last_week: z.number().describe("Position last week (0 if new)"),
   peak: z.number().describe("Peak chart position"),
   weeks: z.number().describe("Weeks on chart"),
@@ -96,6 +98,17 @@ async function fetchBillboard() {
           else if (label === "WEEKS") weeks = safeInt(value);
         });
 
+      // Extract cover art: prefer data-lazy-src, fall back to src, skip fallback GIFs
+      let cover = "";
+      const coverImg = $row.find("img.c-lazy-image__img").first();
+      if (coverImg.length) {
+        const lazySrc = coverImg.attr("data-lazy-src") || "";
+        const src = coverImg.attr("src") || "";
+        const candidate = lazySrc || src;
+        if (candidate && !candidate.includes("lazyload-fallback"))
+          cover = candidate;
+      }
+
       const key = `${title}|${artist}`;
       if (title && artist && !seen.has(key)) {
         seen.add(key);
@@ -103,6 +116,7 @@ async function fetchBillboard() {
           position,
           title,
           artist,
+          cover,
           last_week: lastWeek,
           peak,
           weeks,
@@ -118,7 +132,3 @@ async function fetchBillboard() {
   };
 }
 
-function safeInt(text: string, fallback = 0): number {
-  const n = parseInt(text.replace(/,/g, "").trim(), 10);
-  return isNaN(n) ? fallback : n;
-}
