@@ -6,6 +6,8 @@ export interface Env {
   GITHUB_TOKEN?: string;
   WIKI_USER: string;
   BLOG_FEED: string;
+  LINKDING_TOKEN: string;
+  API_TOKEN: string;
 }
 
 export type AppContext = Context<{ Bindings: Env }>;

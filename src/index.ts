@@ -1,6 +1,7 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { bearerAuth } from "hono/bearer-auth";
 import type { Env } from "./types";
 import { Timeline } from "./endpoints/timeline";
 import { Billboard200 } from "./endpoints/billboard";
@@ -9,6 +10,7 @@ import { SteamProfiles } from "./endpoints/steamProfiles";
 import { HackerNews } from "./endpoints/hackernews";
 import { GitHubReleases } from "./endpoints/githubReleases";
 import { WikipediaWatchlist } from "./endpoints/wikipediaWatchlist";
+import { Bookmarks } from "./endpoints/bookmarks";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -23,6 +25,12 @@ app.use(
     allowMethods: ["GET", "POST", "OPTIONS"],
   }),
 );
+
+app.use("/api/*", async (c, next) => {
+  if (c.req.query("token") === c.env.API_TOKEN) return next();
+  const auth = bearerAuth({ token: c.env.API_TOKEN });
+  return auth(c, next);
+});
 
 const openapi = fromHono(app, {
   docs_url: "/",
@@ -39,6 +47,16 @@ const openapi = fromHono(app, {
         description: "Production",
       },
     ],
+    security: [{ bearerAuth: [] }],
+    // @ts-expect-error chanfana omits `components` from schema type but passes it through at runtime
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+        },
+      },
+    },
     tags: [
       { name: "Music", description: "Billboard chart data" },
       { name: "Tech", description: "Hacker News and GitHub data" },
@@ -46,6 +64,7 @@ const openapi = fromHono(app, {
       { name: "Movies & TV", description: "IMDb ratings and watchlist" },
       { name: "Timeline", description: "Aggregated timeline events" },
       { name: "Wikipedia", description: "Wikipedia watchlist data" },
+      { name: "Bookmarks", description: "Linkding bookmarks" },
     ],
   },
 });
@@ -57,5 +76,6 @@ openapi.get("/api/steam-profiles", SteamProfiles);
 openapi.get("/api/hackernews", HackerNews);
 openapi.get("/api/github-releases", GitHubReleases);
 openapi.post("/api/wikipedia-watchlist", WikipediaWatchlist);
+openapi.get("/api/bookmarks", Bookmarks);
 
 export default app;
