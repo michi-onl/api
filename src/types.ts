@@ -7,6 +7,7 @@ export interface Env {
   WIKI_USER: string;
   BLOG_FEED: string;
   LINKDING_TOKEN: string;
+  TMDB_TOKEN: string;
   API_TOKEN: string;
 }
 

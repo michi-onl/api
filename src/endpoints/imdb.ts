@@ -1,184 +1,126 @@
 import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
-import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
-import { safeInt } from "../utils";
 
 const MAX_ITEMS = 25;
-const USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
-const URLS: Record<string, string> = {
-  movies: "https://www.imdb.com/chart/moviemeter/",
-  tv_shows: "https://www.imdb.com/chart/tvmeter/",
-};
-
-const ImdbItemSchema = z.object({
-  title: z.string().describe("Movie or show title (includes rank prefix)"),
-  rank: z.number().describe("Popularity rank"),
-  year: z.string().describe("Release year or range"),
-  length: z.string().describe("Runtime"),
-  age: z.string().describe("Age rating"),
-  href: z.string().describe("IMDb URL"),
-  rating: z.string().describe("IMDb rating"),
+const TmdbItemSchema = z.object({
+  title: z.string().describe("Movie or show title"),
+  rank: z.number().describe("Trending rank"),
+  year: z.string().describe("Release year or first air date year"),
+  rating: z.string().describe("TMDB vote average"),
   numVotes: z.string().describe("Number of votes"),
-  description: z.string().describe("Short synopsis"),
-  image: z.string().describe("Poster/thumbnail URL"),
-  genre: z.string().describe("Genre tags"),
+  description: z.string().describe("Overview / synopsis"),
+  image: z.string().describe("Poster URL"),
+  href: z.string().describe("TMDB URL"),
+  genre: z.string().describe("Genre names"),
 });
 
-const ImdbCategorySchema = z.object({
+const TmdbCategorySchema = z.object({
   data_title: z.string().describe("Category display name"),
   data_desc: z.string().describe("Category description"),
-  data: z.array(ImdbItemSchema),
+  data: z.array(TmdbItemSchema),
 });
 
-const ImdbResponseSchema = z.object({
-  movies: ImdbCategorySchema,
-  tv_shows: ImdbCategorySchema,
+const TmdbResponseSchema = z.object({
+  movies: TmdbCategorySchema,
+  tv_shows: TmdbCategorySchema,
 });
+
+const GENRE_MAP: Record<number, string> = {
+  28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
+  99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
+  27: "Horror", 10402: "Music", 9648: "Mystery", 10749: "Romance",
+  878: "Science Fiction", 10770: "TV Movie", 53: "Thriller", 10752: "War",
+  37: "Western", 10759: "Action & Adventure", 10762: "Kids", 10763: "News",
+  10764: "Reality", 10765: "Sci-Fi & Fantasy", 10766: "Soap", 10767: "Talk",
+  10768: "War & Politics",
+};
+
+interface TmdbResult {
+  id: number;
+  title?: string;
+  name?: string;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  vote_count?: number;
+  overview?: string;
+  poster_path?: string;
+  genre_ids?: number[];
+}
 
 export class ImdbPopular extends OpenAPIRoute {
   schema = {
     tags: ["Movies & TV"],
-    summary: "IMDb most popular movies and TV shows",
+    summary: "Trending movies and TV shows (via TMDB)",
     responses: {
       "200": {
-        description: "Popular movies and TV shows from IMDb",
-        ...contentJson(ImdbResponseSchema),
+        description: "Trending movies and TV shows",
+        ...contentJson(TmdbResponseSchema),
       },
     },
   };
 
   async handle(c: AppContext) {
-    const data = await cached(c.env.API_CACHE, "imdb-popular:v1", 1800, () =>
-      fetchImdb(),
+    const token = c.env.TMDB_TOKEN;
+    const data = await cached(c.env.API_CACHE, "tmdb-trending:v1", 1800, () =>
+      fetchTrending(token),
     );
     return c.json(data);
   }
 }
 
-async function fetchImdb() {
-  const entries = Object.entries(URLS);
-  const settled = await Promise.allSettled(
-    entries.map(([key, url]) => fetchCategory(key, url)),
+async function fetchTrending(token: string) {
+  const [movies, tvShows] = await Promise.allSettled([
+    fetchCategory("movie", token),
+    fetchCategory("tv", token),
+  ]);
+
+  return {
+    movies:
+      movies.status === "fulfilled"
+        ? movies.value
+        : { data_title: "Trending Movies", data_desc: "", data: [] },
+    tv_shows:
+      tvShows.status === "fulfilled"
+        ? tvShows.value
+        : { data_title: "Trending TV Shows", data_desc: "", data: [] },
+  };
+}
+
+const IMG_BASE = "https://image.tmdb.org/t/p/w500";
+
+async function fetchCategory(type: "movie" | "tv", token: string) {
+  const res = await fetch(
+    `https://api.themoviedb.org/3/trending/${type}/week?language=en-US`,
+    { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } },
   );
+  if (!res.ok) throw new Error(`TMDB ${type} fetch failed: ${res.status}`);
 
-  const results: Record<string, unknown> = {};
-  for (let i = 0; i < entries.length; i++) {
-    const [key] = entries[i];
-    const r = settled[i];
-    results[key] =
-      r.status === "fulfilled"
-        ? r.value
-        : { error: "Failed to fetch data", data: [] };
-  }
-  return results;
-}
-
-const IMDB_TITLE_RE = /\/title\/(tt\d+)/;
-
-interface JsonLdItem {
-  "@type": string;
-  url?: string;
-  name?: string;
-  description?: string;
-  image?: string;
-  genre?: string;
-  aggregateRating?: { ratingValue?: number; ratingCount?: number };
-  contentRating?: string;
-  duration?: string;
-}
-
-async function fetchCategory(key: string, url: string) {
-  const res = await fetch(url, {
-    headers: { "User-Agent": USER_AGENT },
-  });
-  if (!res.ok) throw new Error(`IMDB ${key} fetch failed: ${res.status}`);
-
-  const html = await res.text();
-  const $ = cheerio.load(html);
-
-  // Parse JSON-LD for rich metadata
-  const jsonLdMap = new Map<string, JsonLdItem>();
-  $('script[type="application/ld+json"]').each((_, el) => {
-    try {
-      const data = JSON.parse($(el).text());
-      if (data?.itemListElement) {
-        for (const entry of data.itemListElement) {
-          const item = entry?.item as JsonLdItem | undefined;
-          if (item?.url) {
-            const id = item.url.match(IMDB_TITLE_RE)?.[1];
-            if (id) jsonLdMap.set(id, item);
-          }
-        }
-      }
-    } catch {}
+  const json = (await res.json()) as { results: TmdbResult[] };
+  const items = json.results.slice(0, MAX_ITEMS).map((item, i) => {
+    const title = item.title || item.name || "Unknown";
+    const date = item.release_date || item.first_air_date || "";
+    const year = date ? date.slice(0, 4) : "N/A";
+    const genres = (item.genre_ids || [])
+      .map((id) => GENRE_MAP[id])
+      .filter(Boolean)
+      .join(", ");
+    return {
+      title,
+      rank: i + 1,
+      year,
+      rating: item.vote_average?.toFixed(1) || "N/A",
+      numVotes: item.vote_count?.toLocaleString() || "N/A",
+      description: item.overview || "",
+      image: item.poster_path ? `${IMG_BASE}${item.poster_path}` : "",
+      href: `https://www.themoviedb.org/${type}/${item.id}`,
+      genre: genres,
+    };
   });
 
-  const topItems: Record<string, unknown>[] = [];
-
-  $("li.ipc-metadata-list-summary-item")
-    .slice(0, MAX_ITEMS)
-    .each((_, el) => {
-      const $el = $(el);
-
-      const title = $el.find("h3.ipc-title__text").text().trim() || "N/A";
-      const rankText = $el.find("div.meter-const-ranking").text().trim();
-      const rank = safeInt(rankText.split(" ")[0]);
-
-      const metaItems = $el.find("span.cli-title-metadata-item");
-      const year = (metaItems.eq(0).text().trim() || "N/A").replace(
-        "\u2013",
-        "-",
-      );
-      const length = metaItems.eq(1).text().trim() || "N/A";
-      const age = metaItems.eq(2).text().trim() || "N/A";
-
-      const ratingEl = $el.find("span.ipc-rating-star");
-      let rating = "N/A";
-      let numVotes = "N/A";
-      if (ratingEl.length) {
-        const ratingText = ratingEl.text();
-        if (ratingText.includes("\xa0")) {
-          const parts = ratingText.split("\xa0");
-          rating = parts[0];
-          numVotes = parts[1].replace(/[()]/g, "");
-        } else {
-          rating = ratingText;
-        }
-      }
-
-      const hrefEl = $el.find("a.ipc-title-link-wrapper");
-      let href = hrefEl.attr("href") || "N/A";
-      if (href !== "N/A" && href.startsWith("/"))
-        href = `https://www.imdb.com${href}`;
-
-      // Enrich with JSON-LD data
-      const titleId = href.match(IMDB_TITLE_RE)?.[1];
-      const ld = titleId ? jsonLdMap.get(titleId) : undefined;
-
-      topItems.push({
-        title,
-        rank,
-        year,
-        length,
-        age: ld?.contentRating || age,
-        href,
-        rating: ld?.aggregateRating?.ratingValue?.toString() || rating,
-        numVotes: ld?.aggregateRating?.ratingCount?.toLocaleString() || numVotes,
-        description: ld?.description || "",
-        image: ld?.image || "",
-        genre: ld?.genre || "",
-      });
-    });
-
-  const dataTitle =
-    $("h1.ipc-title__text").first().text().trim() || `IMDb ${key}`;
-  const dataDesc =
-    $("div.ipc-title__description").first().text().trim() || "";
-
-  return { data_title: dataTitle, data_desc: dataDesc, data: topItems };
+  const label = type === "movie" ? "Trending Movies" : "Trending TV Shows";
+  return { data_title: label, data_desc: "Updated weekly", data: items };
 }
-
