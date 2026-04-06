@@ -31,11 +31,18 @@ No test runner or linter is configured.
 
 **CORS:** Configured in `src/index.ts` — allows `https://www.michi.onl` and localhost origins.
 
+## Auth
+
+All `/api/*` routes require an `API_TOKEN` — accepted as a Bearer token or `?token=` query param. See the middleware in `src/index.ts`.
+
 ## Environment & Bindings
 
-Defined in `wrangler.jsonc`:
-- `GITHUB_USER`, `WIKI_USER`, `BLOG_FEED` — plaintext vars
+Defined in `wrangler.jsonc` (plaintext vars) and `.dev.vars` (secrets):
+- `GITHUB_USER`, `WIKI_USER`, `BLOG_FEED` — plaintext vars in wrangler.jsonc
 - `GITHUB_TOKEN` — optional secret for higher GitHub rate limits
+- `LINKDING_TOKEN` — Linkding API token for bookmarks endpoint
+- `TMDB_TOKEN` — TMDB API token for IMDb/movie data
+- `API_TOKEN` — secret used to authenticate incoming requests
 - `API_CACHE` — KV namespace binding
 
 Types are in `src/types.ts` (`Env`, `AppContext`, `TimelineEvent`). Auto-generated binding types are in `worker-configuration.d.ts`.
