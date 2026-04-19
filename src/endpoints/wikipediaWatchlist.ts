@@ -32,7 +32,7 @@ const WikiResponseSchema = z.object({
 
 export class WikipediaWatchlist extends OpenAPIRoute {
   schema = {
-    tags: ["Wikipedia"],
+    tags: ["Knowledge & Education"],
     summary: "Wikipedia watchlist recent edits (POST to protect tokens)",
     request: {
       body: {

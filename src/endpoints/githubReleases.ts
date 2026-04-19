@@ -48,7 +48,7 @@ const ReleasesResponseSchema = z.object({
 
 export class GitHubReleases extends OpenAPIRoute {
   schema = {
-    tags: ["Tech"],
+    tags: ["Development & Tech"],
     summary: "Latest GitHub releases for given repositories",
     request: {
       query: z.object({

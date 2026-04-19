@@ -29,7 +29,7 @@ const BillboardResponseSchema = z.object({
 
 export class Billboard200 extends OpenAPIRoute {
   schema = {
-    tags: ["Music"],
+    tags: ["Media & Entertainment"],
     summary: "Billboard 200 chart top entries",
     responses: {
       "200": {

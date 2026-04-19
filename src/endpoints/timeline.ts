@@ -19,7 +19,7 @@ const TimelineEventSchema = z.object({
 
 export class Timeline extends OpenAPIRoute {
   schema = {
-    tags: ["Timeline"],
+    tags: ["Personal Aggregation"],
     summary: "Aggregated timeline events from multiple sources",
     request: {
       query: z.object({

@@ -11,6 +11,7 @@ import { HackerNews } from "./endpoints/hackernews";
 import { GitHubReleases } from "./endpoints/githubReleases";
 import { WikipediaWatchlist } from "./endpoints/wikipediaWatchlist";
 import { Bookmarks } from "./endpoints/bookmarks";
+import { DhbwTimetable } from "./endpoints/dhbwTimetable";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -58,13 +59,10 @@ const openapi = fromHono(app, {
       },
     },
     tags: [
-      { name: "Music", description: "Billboard chart data" },
-      { name: "Tech", description: "Hacker News and GitHub data" },
-      { name: "Gaming", description: "Steam profile data" },
-      { name: "Movies & TV", description: "IMDb ratings and watchlist" },
-      { name: "Timeline", description: "Aggregated timeline events" },
-      { name: "Wikipedia", description: "Wikipedia watchlist data" },
-      { name: "Bookmarks", description: "Linkding bookmarks" },
+      { name: "Media & Entertainment", description: "Music charts, movies, TV, and gaming data" },
+      { name: "Development & Tech", description: "Developer news and open-source releases" },
+      { name: "Knowledge & Education", description: "Wikipedia and course data" },
+      { name: "Personal Aggregation", description: "Cross-source timelines and bookmarks" },
     ],
   },
 });
@@ -77,5 +75,6 @@ openapi.get("/api/hackernews", HackerNews);
 openapi.get("/api/github-releases", GitHubReleases);
 openapi.post("/api/wikipedia-watchlist", WikipediaWatchlist);
 openapi.get("/api/bookmarks", Bookmarks);
+openapi.get("/api/dhbw-timetable", DhbwTimetable);
 
 export default app;

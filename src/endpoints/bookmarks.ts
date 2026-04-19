@@ -23,7 +23,7 @@ const BookmarksResponseSchema = z.object({
 
 export class Bookmarks extends OpenAPIRoute {
   schema = {
-    tags: ["Bookmarks"],
+    tags: ["Personal Aggregation"],
     summary: "Recent Linkding bookmarks",
     responses: {
       "200": {

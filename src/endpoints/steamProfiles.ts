@@ -38,7 +38,7 @@ const SteamProfileSchema = z.object({
 
 export class SteamProfiles extends OpenAPIRoute {
   schema = {
-    tags: ["Gaming"],
+    tags: ["Media & Entertainment"],
     summary: "Steam profile recently played games",
     request: {
       query: z.object({

@@ -31,7 +31,7 @@ const HNResponseSchema = z.object({
 
 export class HackerNews extends OpenAPIRoute {
   schema = {
-    tags: ["Tech"],
+    tags: ["Development & Tech"],
     summary: "Hacker News best stories",
     responses: {
       "200": {

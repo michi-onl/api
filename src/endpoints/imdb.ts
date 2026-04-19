@@ -53,7 +53,7 @@ interface TmdbResult {
 
 export class ImdbPopular extends OpenAPIRoute {
   schema = {
-    tags: ["Movies & TV"],
+    tags: ["Media & Entertainment"],
     summary: "Trending movies and TV shows (via TMDB)",
     responses: {
       "200": {
