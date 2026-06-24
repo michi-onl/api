@@ -86,9 +86,10 @@ export class GitHubReleases extends OpenAPIRoute {
       .slice(0, MAX_REPOS);
 
     const cacheKey = makeCacheKey("gh-releases", [...repoList].sort().join(","));
+    const token = c.env.GITHUB_TOKEN;
     const data = await cached(c.env.API_CACHE, cacheKey, 3600, async () => {
       const settled = await Promise.allSettled(
-        repoList.map((repo) => fetchRelease(repo)),
+        repoList.map((repo) => fetchRelease(repo, token)),
       );
 
       const results = repoList.map((repo, i) => {
@@ -115,7 +116,7 @@ export class GitHubReleases extends OpenAPIRoute {
   }
 }
 
-async function fetchRelease(repo: string) {
+async function fetchRelease(repo: string, token?: string) {
   if (!GITHUB_REPO_RE.test(repo)) {
     return { repo, error: "Invalid format. Use 'owner/repo'" };
   }
@@ -126,6 +127,7 @@ async function fetchRelease(repo: string) {
       headers: {
         Accept: "application/vnd.github.v3+json",
         "User-Agent": "CloudflareWorker-API",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     },
   );
