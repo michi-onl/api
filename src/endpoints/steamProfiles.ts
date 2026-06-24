@@ -60,10 +60,7 @@ export class SteamProfiles extends OpenAPIRoute {
     const profiles = c.req.query("profiles");
     if (!profiles) {
       return c.json(
-        {
-          error: "No profiles specified. Use ?profiles=username1,username2",
-          example: "/api/steam-profiles?profiles=gaben,valve",
-        },
+        { error: "No profiles specified. Use ?profiles=username1,username2" },
         400,
       );
     }

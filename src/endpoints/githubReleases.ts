@@ -70,11 +70,7 @@ export class GitHubReleases extends OpenAPIRoute {
     const repos = c.req.query("repos");
     if (!repos) {
       return c.json(
-        {
-          error:
-            "No repositories specified. Use ?repos=owner/repo,owner2/repo2",
-          example: "/api/github-releases?repos=nodejs/node,python/cpython",
-        },
+        { error: "No repositories specified. Use ?repos=owner/repo,owner2/repo2" },
         400,
       );
     }

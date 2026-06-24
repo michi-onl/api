@@ -76,12 +76,7 @@ export class WikipediaWatchlist extends OpenAPIRoute {
 
     if (!usernames || !tokens) {
       return c.json(
-        {
-          error:
-            "Missing required parameters. Provide usernames and tokens in POST body.",
-          example:
-            "POST with body: usernames=de:Mike_is_Michi&tokens=de:abc123&languages=de",
-        },
+        { error: "Missing required parameters. Provide usernames and tokens in POST body." },
         400,
       );
     }
