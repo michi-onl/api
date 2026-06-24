@@ -51,7 +51,7 @@ interface TmdbResult {
   genre_ids?: number[];
 }
 
-export class ImdbPopular extends OpenAPIRoute {
+export class TmdbTrending extends OpenAPIRoute {
   schema = {
     tags: ["Media & Entertainment"],
     summary: "Trending movies and TV shows (via TMDB)",

@@ -4,7 +4,7 @@ import { cors } from "hono/cors";
 import type { Env } from "./types";
 import { Timeline } from "./endpoints/timeline";
 import { Billboard200 } from "./endpoints/billboard";
-import { ImdbPopular } from "./endpoints/imdb";
+import { TmdbTrending } from "./endpoints/tmdb";
 import { SteamProfiles } from "./endpoints/steamProfiles";
 import { HackerNews } from "./endpoints/hackernews";
 import { GitHubReleases } from "./endpoints/githubReleases";
@@ -86,7 +86,7 @@ const openapi = fromHono(app, {
 
 openapi.get("/api/timeline", Timeline);
 openapi.get("/api/billboard-200", Billboard200);
-openapi.get("/api/imdb", ImdbPopular);
+openapi.get("/api/imdb", TmdbTrending);
 openapi.get("/api/steam-profiles", SteamProfiles);
 openapi.get("/api/hackernews", HackerNews);
 openapi.get("/api/github-releases", GitHubReleases);
