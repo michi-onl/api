@@ -39,6 +39,13 @@ export async function fetchGitHub(
     ),
   ]);
 
+  if (!eventsRes.ok) {
+    console.error(`GitHub events fetch failed: ${eventsRes.status}`);
+  }
+  if (!commitsRes.ok) {
+    console.error(`GitHub commits search failed: ${commitsRes.status}`);
+  }
+
   const result: TimelineEvent[] = [];
 
   // PR, Issue, and Create events
