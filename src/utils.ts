@@ -30,3 +30,17 @@ export function formatTimeAgo(isoDate: string): string {
   const years = Math.floor(days / 365);
   return `${years} year${years > 1 ? "s" : ""} ago`;
 }
+
+const MAX_KEY_LENGTH = 480;
+
+export function makeCacheKey(namespace: string, ...parts: string[]): string {
+  const raw = `${namespace}:${parts.join(":")}`;
+  if (raw.length <= MAX_KEY_LENGTH) return raw;
+
+  let hash = 5381;
+  for (let i = 0; i < raw.length; i++) {
+    hash = ((hash << 5) + hash) + raw.charCodeAt(i);
+  }
+  const hashHex = (hash >>> 0).toString(16);
+  return `${namespace}:hash:${hashHex}`;
+}
