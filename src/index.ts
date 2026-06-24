@@ -1,7 +1,6 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { bearerAuth } from "hono/bearer-auth";
 import type { Env } from "./types";
 import { Timeline } from "./endpoints/timeline";
 import { Billboard200 } from "./endpoints/billboard";
@@ -29,9 +28,15 @@ app.use(
 );
 
 app.use("/api/*", async (c, next) => {
-  if (c.req.query("token") === c.env.API_TOKEN) return next();
-  const auth = bearerAuth({ token: c.env.API_TOKEN });
-  return auth(c, next);
+  const token = c.env.API_TOKEN;
+  if (!token) {
+    return c.json({ error: "Server misconfiguration: API_TOKEN not set" }, 500);
+  }
+  if (c.req.query("token") === token) return next();
+  const header = c.req.header("Authorization") ?? "";
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (match && match[1] === token) return next();
+  return c.json({ error: "Unauthorized" }, 401);
 });
 
 const openapi = fromHono(app, {
