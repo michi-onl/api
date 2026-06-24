@@ -11,7 +11,7 @@
 		/* Strictness */
 		"noImplicitAny": false,
 		"noImplicitThis": true,
-		"strictNullChecks": false,
+		"strictNullChecks": true,
 		"strict": true,
 		"noUncheckedIndexedAccess": true,
 		/* If NOT transpiling with TypeScript: */
