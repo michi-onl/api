@@ -19,9 +19,10 @@ app.use(
   "*",
   cors({
     origin: (origin) => {
+      if (!origin) return null;
       if (origin === "https://www.michi.onl") return origin;
       if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) return origin;
-      return "https://www.michi.onl";
+      return null;
     },
     allowMethods: ["GET", "POST", "OPTIONS"],
   }),
