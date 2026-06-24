@@ -1,17 +1,17 @@
 # Repo Notes
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for agents working in this repository.
 
 ## Project Overview
 
-Personal API at `api.michi.onl` built as a Cloudflare Worker. Aggregates data from GitHub, Wikipedia, blog, IMDb/TMDB, Billboard, Hacker News, and Steam into a cached REST API with auto-generated OpenAPI 3.1 documentation.
+Personal API at `api.michi.onl` deployed as a Cloudflare Worker. Aggregates GitHub, Wikipedia, blog, IMDb/TMDB, Billboard, Hacker News, Steam, Bookmarks, and DHBW timetable data into a cached REST API with auto-generated OpenAPI 3.1 docs (Swagger UI at `/`).
 
 ## Commands
 
 ```bash
 pnpm install          # Install dependencies
 npm run dev           # Local dev server at http://localhost:8787 (Swagger UI at /)
-npm run deploy        # Deploy to Cloudflare Workers
+npm run deploy        # Deploy to Cloudflare Workers (wrangler deploy)
 npm run cf-typegen    # Regenerate TypeScript types after changing bindings in wrangler.jsonc
 ```
 
@@ -19,17 +19,21 @@ No test runner, linter, or CI is configured — do not invent verification steps
 
 ## Architecture
 
-**Stack:** Hono (routing) + chanfana (OpenAPI schema generation) + Zod (validation)
+**Stack:** Hono (routing) + chanfana (OpenAPI schema generation) + Zod (validation). Entry point: `src/index.ts`.
 
-**Endpoints** (`src/endpoints/`): Each file exports a class extending `OpenAPIRoute` with a `schema` (Zod-based) and `handle(c: AppContext)`. Registered centrally in `src/index.ts`. Current endpoints: `timeline`, `billboard`, `imdb`, `steamProfiles`, `hackernews`, `githubReleases`, `wikipediaWatchlist`, `bookmarks`.
+**Endpoints** (`src/endpoints/`): Each file exports a class extending `OpenAPIRoute` with a Zod `schema` and `handle(c: AppContext)`. Registered centrally in `src/index.ts`. `wikipediaWatchlist` is the only POST route; the rest are GET.
 
-**Fetchers** (`src/fetchers/`): Standalone functions for external APIs/scraping. `GET /api/timeline` composes all fetchers via `Promise.allSettled` — preserve partial-success behavior, never fail the whole response on one upstream error.
+**Fetchers** (`src/fetchers/`): Standalone functions for external APIs/scraping. Used by both dedicated endpoints and the timeline.
 
-**Caching** (`src/cache.ts`): Generic wrapper over Cloudflare KV (`API_CACHE` binding). TTLs range from 10 min to 6 hours; some endpoints only cache on successful results via the optional `shouldCache` predicate.
+**Caching** (`src/cache.ts`): Generic `cached()` wrapper over the `API_CACHE` KV namespace. TTLs range 10 min–6 h. Optional `shouldCache` predicate gates writes on successful results.
 
-**Timeline** (`GET /api/timeline`): Merges events from 5 sources (GitHub, Wikipedia, blog, gallery, IMDb). `src/normalize.ts` deduplicates and filters to the last 90 days.
+**Timeline** (`GET /api/timeline`): Merges events from 5 sources (GitHub, Wikipedia, blog, gallery, IMDb) via `Promise.allSettled`. `src/normalize.ts` deduplicates and filters to the last 90 days. Preserve partial-success behavior — never fail the whole response on one upstream error.
 
-**Special case:** `src/fetchers/imdb.ts` reads local `data/imdb-ratings.json`. The `/api/imdb` endpoint (trending/popular) is separate and uses `TMDB_TOKEN`.
+**`src/fetchers/imdb.ts`** reads local `data/imdb-ratings.json` for the timeline. The separate `/api/imdb` endpoint (trending/popular, `endpoints/tmdb.ts` `TmdbTrending`) uses live `TMDB_TOKEN` calls — do not confuse the two.
+
+**DHBW timetable** (`src/fetchers/dhbw.ts`): Hardcoded `DHBW_COURSE_CODE = "HDH-WWI2025B"` against `https://api.dhbw.app`. No env binding — edit the constant to change course.
+
+**Non-API routes:** `GET /health` (unauthenticated `{status, timestamp}`), `/` (Swagger UI via chanfana). Request-logging middleware on all routes.
 
 ## Auth & CORS
 
@@ -38,11 +42,12 @@ No test runner, linter, or CI is configured — do not invent verification steps
 
 ## Environment & Bindings
 
-Defined in `wrangler.jsonc` (plaintext vars) and `.dev.vars` (secrets). `Env` in `src/types.ts` is the canonical binding checklist:
+Defined in `wrangler.jsonc` (plaintext vars), `.dev.vars` (secrets), and typed by `Env` in `src/types.ts` (canonical checklist):
 
 | Binding | Type | Purpose |
 |---------|------|---------|
 | `API_CACHE` | KV namespace | Cache storage |
+| `ASSETS` | static assets | Serves `public/` |
 | `GITHUB_USER` | var | GitHub username |
 | `WIKI_USER` | var | Wikipedia username |
 | `BLOG_FEED` | var | Blog RSS feed URL |
@@ -55,39 +60,20 @@ Run `npm run cf-typegen` after changing bindings; generated types land in `worke
 
 ## TypeScript
 
-Strict mode on; `noImplicitAny` and `strictNullChecks` are **off**; `noUncheckedIndexedAccess` is **on**. JSON imports supported (`resolveJsonModule`).
+Strict mode on; `noImplicitAny` **off**; `strictNullChecks` and `noUncheckedIndexedAccess` **on**. `resolveJsonModule` on (JSON imports supported).
 
-# Cloudflare Workers
+## Conventions
 
-STOP. Your knowledge of Cloudflare Workers APIs and limits may be outdated. Always retrieve current documentation before any Workers, KV, R2, D1, Durable Objects, Queues, Vectorize, AI, or Agents SDK task.
+Hard-won rules from past bugfixes — follow them:
 
-## Docs
+- **Error responses**: return `{ error: string }` via `ErrorResponseSchema` from `src/types.ts`. No other shape.
+- **Cache keys**: use `makeCacheKey(namespace, ...parts)` from `src/utils.ts` for any key with variable-length parts. KV rejects keys over 512 bytes; `makeCacheKey` hashes long keys to stay under.
+- **Cache resilience**: `cached()` already wraps KV read/write in try/catch. Never let a cache failure bubble up as an error response.
+- **Auth fails closed**: unset or mismatched `API_TOKEN` → 401/500, never pass through.
+- **Upstream fetch failures**: `console.log` them, then return partial/empty result. Never swallow silently. Timeline's `Promise.allSettled` is the model.
+- **GitHub API**: pass `GITHUB_TOKEN` when available for higher rate limits.
+- **OpenAPI tags**: exactly 4 categories — `Media & Entertainment`, `Development & Tech`, `Knowledge & Education`, `Personal Aggregation`. Assign every endpoint one.
 
-- https://developers.cloudflare.com/workers/
-- MCP: `https://docs.mcp.cloudflare.com/mcp`
+## Cloudflare Workers
 
-For all limits and quotas, retrieve from the product's `/platform/limits/` page. eg. `/workers/platform/limits`
-
-## Commands
-
-| Command               | Purpose                   |
-| --------------------- | ------------------------- |
-| `npx wrangler dev`    | Local development         |
-| `npx wrangler deploy` | Deploy to Cloudflare      |
-| `npx wrangler types`  | Generate TypeScript types |
-
-Run `wrangler types` after changing bindings in wrangler.jsonc.
-
-## Node.js Compatibility
-
-https://developers.cloudflare.com/workers/runtime-apis/nodejs/
-
-## Errors
-
-- **Error 1102** (CPU/Memory exceeded): Retrieve limits from `/workers/platform/limits/`
-- **All errors**: https://developers.cloudflare.com/workers/observability/errors/
-
-## Product Docs
-
-Retrieve API references and limits from:
-`/kv/` · `/r2/` · `/d1/` · `/durable-objects/` · `/queues/` · `/vectorize/` · `/workers-ai/` · `/agents/`
+Cloudflare Workers APIs and limits change frequently. Before any task touching Workers/KV/R2/D1/Durable Objects/Queues/Vectorize/AI/Agents SDK features, retrieve current docs from https://developers.cloudflare.com/workers/ (or `https://docs.mcp.cloudflare.com/mcp`). Limits live under each product's `/platform/limits/` page.
