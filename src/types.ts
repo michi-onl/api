@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { z } from "zod";
 
 export interface Env {
   API_CACHE: KVNamespace;
@@ -20,3 +21,9 @@ export interface TimelineEvent {
   title: string;
   url: string;
 }
+
+export const ErrorResponseSchema = z.object({
+  error: z.string(),
+});
+
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
