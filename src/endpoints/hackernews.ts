@@ -87,7 +87,13 @@ async function fetchHN() {
       const ageSpan = subtext.find("span.age");
       const timePosted = ageSpan.text().trim() || "N/A";
       const rawTimestamp = ageSpan.attr("title") || "";
-      const timestamp = rawTimestamp.split(" ")[0] || "";
+      let timestamp = "";
+      if (rawTimestamp) {
+        const d = new Date(rawTimestamp);
+        timestamp = isNaN(d.getTime())
+          ? (rawTimestamp.split(/\s|T/)[0] ?? "")
+          : d.toISOString().split("T")[0]!;
+      }
 
       let numComments = 0;
       const links = subtext.find("a");
