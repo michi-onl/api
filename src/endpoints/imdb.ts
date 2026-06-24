@@ -99,8 +99,11 @@ async function fetchCategory(type: "movie" | "tv", token: string) {
   );
   if (!res.ok) throw new Error(`TMDB ${type} fetch failed: ${res.status}`);
 
-  const json = (await res.json()) as { results: TmdbResult[] };
-  const items = json.results.slice(0, MAX_ITEMS).map((item, i) => {
+  const json = (await res.json()) as Record<string, unknown>;
+  if (!Array.isArray(json.results)) {
+    throw new Error(`Unexpected TMDB ${type} response: missing results array`);
+  }
+  const items = (json.results as TmdbResult[]).slice(0, MAX_ITEMS).map((item, i) => {
     const title = item.title || item.name || "Unknown";
     const date = item.release_date || item.first_air_date || "";
     const year = date ? date.slice(0, 4) : "N/A";
