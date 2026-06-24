@@ -80,7 +80,7 @@ async function fetchHN() {
       let points = 0;
       if (scoreSpan.length) {
         const m = DIGIT_RE.exec(scoreSpan.text());
-        if (m) points = parseInt(m[1], 10);
+        if (m) points = parseInt(m[1]!, 10);
       }
 
       const author = subtext.find("a.hnuser").text().trim() || "N/A";
@@ -100,7 +100,7 @@ async function fetchHN() {
       const lastLink = links.last();
       if (lastLink.length && lastLink.text().toLowerCase().includes("comment")) {
         const m = DIGIT_RE.exec(lastLink.text());
-        if (m) numComments = parseInt(m[1], 10);
+        if (m) numComments = parseInt(m[1]!, 10);
       }
 
       const hnUrl = storyId

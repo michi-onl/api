@@ -119,13 +119,13 @@ export class WikipediaWatchlist extends OpenAPIRoute {
       );
 
       for (let i = 0; i < langList.length; i++) {
-        const r = settled[i];
+        const r = settled[i]!;
         if (r.status === "fulfilled") {
           allEdits.push(...r.value);
         } else {
           errors.push({
-            language: langList[i],
-            error: `Failed to fetch ${langList[i]} watchlist`,
+            language: langList[i]!,
+            error: `Failed to fetch ${langList[i]!} watchlist`,
           });
         }
       }

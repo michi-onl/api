@@ -82,12 +82,12 @@ export class SteamProfiles extends OpenAPIRoute {
 
       const results: Record<string, unknown> = {};
       for (let i = 0; i < profileList.length; i++) {
-        const r = settled[i];
-        results[profileList[i]] =
+        const r = settled[i]!;
+        results[profileList[i]!] =
           r.status === "fulfilled"
             ? r.value
             : {
-                profileName: profileList[i],
+                profileName: profileList[i]!,
                 profileUrl: "",
                 recentGames: [],
                 totalGames: 0,
@@ -169,7 +169,7 @@ async function fetchSteamProfile(profileName: string) {
   ).first();
   if (totalGamesElem.length) {
     const m = DIGIT_RE.exec(totalGamesElem.text());
-    if (m) totalGames = parseInt(m[1], 10);
+    if (m) totalGames = parseInt(m[1]!, 10);
   }
 
   const actualNameElem = $(".actual_persona_name").first();
@@ -208,7 +208,7 @@ function parseSteamGame(
 
   const parts = gameInfoText.split("last played on");
   const hoursPlayed = parts[0]?.trim() || "N/A";
-  const lastPlayedShort = parts.length > 1 ? parts[1].trim() : "N/A";
+  const lastPlayedShort = parts.length > 1 ? parts[1]!.trim() : "N/A";
   const hoursPlayedNumeric = parseHoursPlayed(hoursPlayed);
   const lastPlayed =
     lastPlayedShort !== "N/A"
@@ -219,7 +219,7 @@ function parseSteamGame(
   const href = nameLink.attr("href");
   if (href) {
     const m = STEAM_APP_ID_RE.exec(href);
-    if (m) appId = m[1];
+    if (m) appId = m[1] ?? null;
   }
 
   let iconImg = $el.find(".game_info_cap img").first();
@@ -246,11 +246,11 @@ function parseHoursPlayed(text: string): number {
 
   if (clean.includes("minute")) {
     const m = MINUTES_RE.exec(clean);
-    return m ? parseFloat(m[1]) / 60 : 0;
+    return m ? parseFloat(m[1]!) / 60 : 0;
   }
   if (clean.includes("hour") || clean.includes("hr")) {
     const m = HOURS_RE.exec(clean);
-    return m ? parseFloat(m[1]) : 0;
+    return m ? parseFloat(m[1]!) : 0;
   }
   return 0;
 }

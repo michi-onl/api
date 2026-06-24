@@ -54,7 +54,7 @@ async function fetchBillboard() {
   if (!res.ok) throw new Error(`Billboard fetch failed: ${res.status}`);
 
   const $ = cheerio.load(await res.text());
-  const topItems: Record<string, unknown>[] = [];
+  const topItems: z.infer<typeof BillboardItemSchema>[] = [];
   const seen = new Set<string>();
 
   $("div.o-chart-results-list-row-container")

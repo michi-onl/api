@@ -93,7 +93,7 @@ export class GitHubReleases extends OpenAPIRoute {
       );
 
       const results = repoList.map((repo, i) => {
-        const r = settled[i];
+        const r = settled[i]!;
         return r.status === "fulfilled"
           ? r.value
           : { repo, error: "Failed to fetch release" };
