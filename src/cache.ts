@@ -5,12 +5,20 @@ export async function cached<T>(
   fn: () => Promise<T>,
   shouldCache?: (result: T) => boolean,
 ): Promise<T> {
-  const hit = await kv.get(key);
-  if (hit) return JSON.parse(hit) as T;
+  try {
+    const hit = await kv.get(key);
+    if (hit) return JSON.parse(hit) as T;
+  } catch {
+    // Cache read failed; fall through to origin fetch
+  }
 
   const result = await fn();
   if (!shouldCache || shouldCache(result)) {
-    await kv.put(key, JSON.stringify(result), { expirationTtl: ttl });
+    try {
+      await kv.put(key, JSON.stringify(result), { expirationTtl: ttl });
+    } catch {
+      // Cache write failed; ignore
+    }
   }
   return result;
 }
