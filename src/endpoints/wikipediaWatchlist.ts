@@ -3,7 +3,7 @@ import { z } from "zod";
 import * as cheerio from "cheerio";
 import type { AppContext } from "../types";
 import { cached } from "../cache";
-import { formatTimeAgo } from "../utils";
+import { formatTimeAgo, makeCacheKey } from "../utils";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
@@ -107,7 +107,7 @@ export class WikipediaWatchlist extends OpenAPIRoute {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}:${v}`)
       .join(",");
-    const cacheKey = `wiki:${[...langList].sort().join(",")}_${usernamesPart}_${hours}_${limit}`;
+    const cacheKey = makeCacheKey("wiki", [...langList].sort().join(","), usernamesPart, String(hours), String(limit));
     const data = await cached(c.env.API_CACHE, cacheKey, 3600, async () => {
       const allEdits: Record<string, unknown>[] = [];
       const errors: Record<string, unknown>[] = [];
