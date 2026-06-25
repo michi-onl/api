@@ -70,10 +70,12 @@ export class Timeline extends OpenAPIRoute {
 
       const results = await Promise.allSettled(chosen);
 
-      return normalize(
+      const events = normalize(
         results.flatMap((r) => (r.status === "fulfilled" ? r.value : [])),
       );
-    });
+
+      return events;
+    }, (result) => result.length > 0);
 
     return c.json(events);
   }
