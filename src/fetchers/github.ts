@@ -12,8 +12,15 @@ interface GitHubEvent {
     issue?: { title?: string; html_url?: string; number?: number };
     ref?: string;
     ref_type?: string;
+    release?: { tag_name?: string; name?: string; html_url?: string };
+    forkee?: { full_name?: string; html_url?: string };
   };
 }
+
+const MAX_STAR_EVENTS = 10;
+const MAX_FORK_EVENTS = 10;
+const MAX_RELEASE_EVENTS = 10;
+const MAX_REPO_CREATE_EVENTS = 10;
 
 interface GitHubCommitEvent {
   sha: string;
