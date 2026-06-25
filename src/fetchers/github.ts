@@ -55,6 +55,12 @@ export async function fetchGitHub(
 
   const result: TimelineEvent[] = [];
 
+  const releaseRows: TimelineEvent[] = [];
+  const starRows: TimelineEvent[] = [];
+  const forkRows: TimelineEvent[] = [];
+  const repoCreateRows: TimelineEvent[] = [];
+  const releaseTags = new Set<string>();
+
   // PR, Issue, and Create events
   if (eventsRes.ok) {
     const events: GitHubEvent[] = await eventsRes.json();
@@ -88,7 +94,11 @@ export async function fetchGitHub(
             issue.html_url ??
             `https://github.com/${e.repo.name}/issues/${issue.number}`,
         });
-      } else if (e.type === "CreateEvent" && e.payload.ref_type === "tag") {
+      } else if (
+        e.type === "CreateEvent" &&
+        e.payload.ref_type === "tag" &&
+        !releaseTags.has(`${e.repo.name}|${e.payload.ref ?? ""}`)
+      ) {
         result.push({
           id: `github:${e.id}`,
           date: e.created_at,
@@ -96,9 +106,53 @@ export async function fetchGitHub(
           title: `Tagged ${e.payload.ref} in ${e.repo.name}`,
           url: `https://github.com/${e.repo.name}/releases/tag/${e.payload.ref}`,
         });
+      } else if (e.type === "ReleaseEvent" && e.payload.release) {
+        const rel = e.payload.release;
+        if (e.payload.action === "published") {
+          const tag = rel.tag_name ?? "";
+          const name = rel.name ?? tag;
+          releaseRows.push({
+            id: `github:${e.id}`,
+            date: e.created_at,
+            source: "github",
+            title: `Release ${tag}: ${name} in ${e.repo.name}`,
+            url: rel.html_url ?? `https://github.com/${e.repo.name}/releases/tag/${tag}`,
+          });
+          if (tag) releaseTags.add(`${e.repo.name}|${tag}`);
+        }
+      } else if (e.type === "WatchEvent" && e.payload.action === "started") {
+        starRows.push({
+          id: `github:${e.id}`,
+          date: e.created_at,
+          source: "github",
+          title: `Starred ${e.repo.name}`,
+          url: `https://github.com/${e.repo.name}`,
+        });
+      } else if (e.type === "ForkEvent" && e.payload.action === "forked" && e.payload.forkee) {
+        const forkee = e.payload.forkee;
+        forkRows.push({
+          id: `github:${e.id}`,
+          date: e.created_at,
+          source: "github",
+          title: `Forked ${e.repo.name} → ${forkee.full_name ?? e.repo.name}`,
+          url: forkee.html_url ?? `https://github.com/${e.repo.name}`,
+        });
+      } else if (e.type === "CreateEvent" && e.payload.ref_type === "repository") {
+        repoCreateRows.push({
+          id: `github:${e.id}`,
+          date: e.created_at,
+          source: "github",
+          title: `Created repo ${e.repo.name}`,
+          url: `https://github.com/${e.repo.name}`,
+        });
       }
     }
   }
+
+  result.push(...releaseRows.slice(0, MAX_RELEASE_EVENTS));
+  result.push(...starRows.slice(0, MAX_STAR_EVENTS));
+  result.push(...forkRows.slice(0, MAX_FORK_EVENTS));
+  result.push(...repoCreateRows.slice(0, MAX_REPO_CREATE_EVENTS));
 
   // Commits via search API (reliable, includes full message)
   if (commitsRes.ok) {
