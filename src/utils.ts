@@ -39,7 +39,7 @@ export function makeCacheKey(namespace: string, ...parts: string[]): string {
 
   let hash = 5381;
   for (let i = 0; i < raw.length; i++) {
-    hash = ((hash << 5) + hash) + raw.charCodeAt(i);
+    hash = (hash << 5) + hash + raw.charCodeAt(i);
   }
   const hashHex = (hash >>> 0).toString(16);
   return `${namespace}:hash:${hashHex}`;

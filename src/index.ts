@@ -1,7 +1,7 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { Env } from "./types";
+import { ErrorResponseSchema, type Env } from "./types";
 import { Timeline } from "./endpoints/timeline";
 import { Billboard200 } from "./endpoints/billboard";
 import { TmdbTrending } from "./endpoints/tmdb";
@@ -20,7 +20,11 @@ app.use(
     origin: (origin) => {
       if (!origin) return null;
       if (origin === "https://michi.onl") return origin;
-      if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) return origin;
+      if (
+        origin.startsWith("http://localhost:") ||
+        origin.startsWith("http://127.0.0.1:")
+      )
+        return origin;
       return null;
     },
     allowMethods: ["GET", "POST", "OPTIONS"],
@@ -41,13 +45,18 @@ app.get("/health", (c) =>
 app.use("/api/*", async (c, next) => {
   const token = c.env.API_TOKEN;
   if (!token) {
-    return c.json({ error: "Server misconfiguration: API_TOKEN not set" }, 500);
+    return c.json(
+      ErrorResponseSchema.parse({
+        error: "Server misconfiguration: API_TOKEN not set",
+      }),
+      500,
+    );
   }
   if (c.req.query("token") === token) return next();
   const header = c.req.header("Authorization") ?? "";
   const match = header.match(/^Bearer\s+(.+)$/i);
   if (match && match[1] === token) return next();
-  return c.json({ error: "Unauthorized" }, 401);
+  return c.json(ErrorResponseSchema.parse({ error: "Unauthorized" }), 401);
 });
 
 const openapi = fromHono(app, {
@@ -76,10 +85,22 @@ const openapi = fromHono(app, {
       },
     },
     tags: [
-      { name: "Media & Entertainment", description: "Music charts, movies, TV, and gaming data" },
-      { name: "Development & Tech", description: "Developer news and open-source releases" },
-      { name: "Knowledge & Education", description: "Wikipedia and course data" },
-      { name: "Personal Aggregation", description: "Cross-source timelines and bookmarks" },
+      {
+        name: "Media & Entertainment",
+        description: "Music charts, movies, TV, and gaming data",
+      },
+      {
+        name: "Development & Tech",
+        description: "Developer news and open-source releases",
+      },
+      {
+        name: "Knowledge & Education",
+        description: "Wikipedia and course data",
+      },
+      {
+        name: "Personal Aggregation",
+        description: "Cross-source timelines and bookmarks",
+      },
     ],
   },
 });

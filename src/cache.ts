@@ -8,16 +8,18 @@ export async function cached<T>(
   try {
     const hit = await kv.get(key);
     if (hit) return JSON.parse(hit) as T;
-  } catch {
+  } catch (e) {
     // Cache read failed; fall through to origin fetch
+    console.log(`cache read failed for ${key}: ${e}`);
   }
 
   const result = await fn();
   if (!shouldCache || shouldCache(result)) {
     try {
       await kv.put(key, JSON.stringify(result), { expirationTtl: ttl });
-    } catch {
-      // Cache write failed; ignore
+    } catch (e) {
+      // Cache write failed; serve the result anyway
+      console.log(`cache write failed for ${key}: ${e}`);
     }
   }
   return result;

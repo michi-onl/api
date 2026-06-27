@@ -42,8 +42,12 @@ export class HackerNews extends OpenAPIRoute {
   };
 
   async handle(c: AppContext) {
-    const data = await cached(c.env.API_CACHE, "hn:v1", 600, () =>
-      fetchHN(),
+    const data = await cached(
+      c.env.API_CACHE,
+      "hn:v1",
+      600,
+      () => fetchHN(),
+      (result) => result.stories.length > 0,
     );
     return c.json(data);
   }
@@ -51,10 +55,20 @@ export class HackerNews extends OpenAPIRoute {
 
 async function fetchHN() {
   const url = "https://news.ycombinator.com/best";
-  const res = await fetch(url, {
-    headers: { "User-Agent": USER_AGENT },
-  });
-  if (!res.ok) throw new Error(`HN fetch failed: ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT },
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) {
+    console.log(`HN fetch error: ${e}`);
+    return { source: "Hacker News", url, count: 0, stories: [] };
+  }
+  if (!res.ok) {
+    console.log(`HN fetch failed: ${res.status}`);
+    return { source: "Hacker News", url, count: 0, stories: [] };
+  }
 
   const $ = cheerio.load(await res.text());
   const stories: Record<string, unknown>[] = [];
@@ -92,13 +106,16 @@ async function fetchHN() {
         const d = new Date(rawTimestamp);
         timestamp = isNaN(d.getTime())
           ? (rawTimestamp.split(/\s|T/)[0] ?? "")
-          : d.toISOString().split("T")[0]!;
+          : (d.toISOString().split("T").at(0) ?? "");
       }
 
       let numComments = 0;
       const links = subtext.find("a");
       const lastLink = links.last();
-      if (lastLink.length && lastLink.text().toLowerCase().includes("comment")) {
+      if (
+        lastLink.length &&
+        lastLink.text().toLowerCase().includes("comment")
+      ) {
         const m = DIGIT_RE.exec(lastLink.text());
         if (m) numComments = parseInt(m[1]!, 10);
       }

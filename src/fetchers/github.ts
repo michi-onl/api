@@ -36,21 +36,33 @@ export async function fetchGitHub(
   const headers: Record<string, string> = { "User-Agent": "timeline-worker" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const [eventsRes, commitsRes] = await Promise.all([
+  const [eventsSettled, commitsSettled] = await Promise.allSettled([
     fetch(`https://api.github.com/users/${user}/events?per_page=100`, {
       headers,
+      signal: AbortSignal.timeout(10000),
     }),
     fetch(
       `https://api.github.com/search/commits?q=author:${user}&sort=author-date&per_page=30`,
-      { headers },
+      { headers, signal: AbortSignal.timeout(10000) },
     ),
   ]);
 
-  if (!eventsRes.ok) {
-    console.error(`GitHub events fetch failed: ${eventsRes.status}`);
+  const eventsRes =
+    eventsSettled.status === "fulfilled" ? eventsSettled.value : null;
+  const commitsRes =
+    commitsSettled.status === "fulfilled" ? commitsSettled.value : null;
+
+  if (eventsSettled.status === "rejected") {
+    console.error(`GitHub events fetch error: ${eventsSettled.reason}`);
+  } else if (!eventsSettled.value.ok) {
+    console.error(`GitHub events fetch failed: ${eventsSettled.value.status}`);
   }
-  if (!commitsRes.ok) {
-    console.error(`GitHub commits search failed: ${commitsRes.status}`);
+  if (commitsSettled.status === "rejected") {
+    console.error(`GitHub commits search error: ${commitsSettled.reason}`);
+  } else if (!commitsSettled.value.ok) {
+    console.error(
+      `GitHub commits search failed: ${commitsSettled.value.status}`,
+    );
   }
 
   const result: TimelineEvent[] = [];
@@ -62,7 +74,7 @@ export async function fetchGitHub(
   const releaseTags = new Set<string>();
 
   // PR, Issue, and Create events
-  if (eventsRes.ok) {
+  if (eventsRes && eventsRes.ok) {
     const events: GitHubEvent[] = await eventsRes.json();
     for (const e of events) {
       if (e.type === "PullRequestEvent" && e.payload.pull_request) {
@@ -116,7 +128,9 @@ export async function fetchGitHub(
             date: e.created_at,
             source: "github",
             title: `Release ${tag}: ${name} in ${e.repo.name}`,
-            url: rel.html_url ?? `https://github.com/${e.repo.name}/releases/tag/${tag}`,
+            url:
+              rel.html_url ??
+              `https://github.com/${e.repo.name}/releases/tag/${tag}`,
           });
           if (tag) releaseTags.add(`${e.repo.name}|${tag}`);
         }
@@ -128,7 +142,11 @@ export async function fetchGitHub(
           title: `Starred ${e.repo.name}`,
           url: `https://github.com/${e.repo.name}`,
         });
-      } else if (e.type === "ForkEvent" && e.payload.action === "forked" && e.payload.forkee) {
+      } else if (
+        e.type === "ForkEvent" &&
+        e.payload.action === "forked" &&
+        e.payload.forkee
+      ) {
         const forkee = e.payload.forkee;
         forkRows.push({
           id: `github:${e.id}`,
@@ -137,7 +155,10 @@ export async function fetchGitHub(
           title: `Forked ${e.repo.name} → ${forkee.full_name ?? e.repo.name}`,
           url: forkee.html_url ?? `https://github.com/${e.repo.name}`,
         });
-      } else if (e.type === "CreateEvent" && e.payload.ref_type === "repository") {
+      } else if (
+        e.type === "CreateEvent" &&
+        e.payload.ref_type === "repository"
+      ) {
         repoCreateRows.push({
           id: `github:${e.id}`,
           date: e.created_at,
@@ -155,7 +176,7 @@ export async function fetchGitHub(
   result.push(...repoCreateRows.slice(0, MAX_REPO_CREATE_EVENTS));
 
   // Commits via search API (reliable, includes full message)
-  if (commitsRes.ok) {
+  if (commitsRes && commitsRes.ok) {
     const data: { items?: GitHubCommitEvent[] } = await commitsRes.json();
     for (const c of data.items ?? []) {
       const msg = c.commit.message.split("\n")[0];

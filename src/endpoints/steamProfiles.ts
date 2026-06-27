@@ -1,8 +1,9 @@
 import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import * as cheerio from "cheerio";
-import type { AppContext } from "../types";
+import { ErrorResponseSchema, type AppContext } from "../types";
 import { cached } from "../cache";
+import { makeCacheKey } from "../utils";
 
 const MAX_PROFILES = 8;
 const MAX_GAMES = 10;
@@ -36,6 +37,14 @@ const SteamProfileSchema = z.object({
   totalGames: z.number().nullable().describe("Total games owned"),
 });
 
+const SteamProfileErrorSchema = z.object({
+  profileName: z.string().describe("Display name"),
+  profileUrl: z.string().describe("Steam profile URL"),
+  recentGames: z.array(SteamGameSchema),
+  totalGames: z.number().nullable().describe("Total games owned"),
+  error: z.string().describe("Reason this profile could not be fetched"),
+});
+
 export class SteamProfiles extends OpenAPIRoute {
   schema = {
     tags: ["Media & Entertainment"],
@@ -49,8 +58,14 @@ export class SteamProfiles extends OpenAPIRoute {
     },
     responses: {
       "200": {
-        description: "Steam profile data with recent games. Keys are profile usernames.",
-        ...contentJson(z.record(z.string(), SteamProfileSchema)),
+        description:
+          "Steam profile data with recent games. Keys are profile usernames.",
+        ...contentJson(
+          z.record(
+            z.string(),
+            z.union([SteamProfileSchema, SteamProfileErrorSchema]),
+          ),
+        ),
       },
       "400": { description: "Missing profiles parameter" },
     },
@@ -60,7 +75,9 @@ export class SteamProfiles extends OpenAPIRoute {
     const profiles = c.req.query("profiles");
     if (!profiles) {
       return c.json(
-        { error: "No profiles specified. Use ?profiles=username1,username2" },
+        ErrorResponseSchema.parse({
+          error: "No profiles specified. Use ?profiles=username1,username2",
+        }),
         400,
       );
     }
@@ -71,28 +88,37 @@ export class SteamProfiles extends OpenAPIRoute {
       .filter(Boolean)
       .slice(0, MAX_PROFILES);
 
-    const cacheKey = `steam:${[...profileList].sort().join(",")}`;
-    const data = await cached(c.env.API_CACHE, cacheKey, 21600, async () => {
-      const settled = await Promise.allSettled(
-        profileList.map((name) => fetchSteamProfile(name)),
-      );
+    const cacheKey = makeCacheKey("steam", [...profileList].sort().join(","));
+    const data = await cached(
+      c.env.API_CACHE,
+      cacheKey,
+      21600,
+      async () => {
+        const settled = await Promise.allSettled(
+          profileList.map((name) => fetchSteamProfile(name)),
+        );
 
-      const results: Record<string, unknown> = {};
-      for (let i = 0; i < profileList.length; i++) {
-        const r = settled[i]!;
-        results[profileList[i]!] =
-          r.status === "fulfilled"
-            ? r.value
-            : {
-                profileName: profileList[i]!,
-                profileUrl: "",
-                recentGames: [],
-                totalGames: 0,
-                error: "Failed to fetch profile",
-              };
-      }
-      return results;
-    }, (result) => !Object.values(result).some((v: unknown) => (v as Record<string, unknown>)?.error));
+        const results: Record<string, unknown> = {};
+        for (let i = 0; i < profileList.length; i++) {
+          const r = settled[i]!;
+          results[profileList[i]!] =
+            r.status === "fulfilled"
+              ? r.value
+              : {
+                  profileName: profileList[i]!,
+                  profileUrl: "",
+                  recentGames: [],
+                  totalGames: 0,
+                  error: "Failed to fetch profile",
+                };
+        }
+        return results;
+      },
+      (result) =>
+        !Object.values(result).some(
+          (v: unknown) => (v as Record<string, unknown>)?.error,
+        ),
+    );
 
     return c.json(data);
   }
@@ -112,6 +138,7 @@ async function fetchSteamProfile(profileName: string) {
   const profileUrl = `https://steamcommunity.com/id/${profileName}/`;
   const res = await fetch(profileUrl, {
     headers: { "User-Agent": USER_AGENT },
+    signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) throw new Error(`Steam fetch failed: ${res.status}`);
 
@@ -208,9 +235,7 @@ function parseSteamGame(
   const lastPlayedShort = parts.length > 1 ? parts[1]!.trim() : "N/A";
   const hoursPlayedNumeric = parseHoursPlayed(hoursPlayed);
   const lastPlayed =
-    lastPlayedShort !== "N/A"
-      ? `last played on ${lastPlayedShort}`
-      : "N/A";
+    lastPlayedShort !== "N/A" ? `last played on ${lastPlayedShort}` : "N/A";
 
   let appId: string | null = null;
   const href = nameLink.attr("href");

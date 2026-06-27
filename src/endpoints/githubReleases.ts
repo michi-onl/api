@@ -1,6 +1,6 @@
 import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
-import type { AppContext } from "../types";
+import { ErrorResponseSchema, type AppContext } from "../types";
 import { cached } from "../cache";
 import { formatTimeAgo, makeCacheKey } from "../utils";
 
@@ -40,10 +40,15 @@ const ReleaseSchema = z.object({
   assets: z.array(ReleaseAssetSchema).describe("Downloadable assets"),
 });
 
+const ReleaseErrorSchema = z.object({
+  repo: z.string().describe("Repository in owner/repo format"),
+  error: z.string().describe("Reason this repo's release could not be fetched"),
+});
+
 const ReleasesResponseSchema = z.object({
   source: z.string(),
   count: z.number().describe("Number of repos returned"),
-  releases: z.array(ReleaseSchema),
+  releases: z.array(z.union([ReleaseSchema, ReleaseErrorSchema])),
 });
 
 export class GitHubReleases extends OpenAPIRoute {
@@ -70,7 +75,10 @@ export class GitHubReleases extends OpenAPIRoute {
     const repos = c.req.query("repos");
     if (!repos) {
       return c.json(
-        { error: "No repositories specified. Use ?repos=owner/repo,owner2/repo2" },
+        ErrorResponseSchema.parse({
+          error:
+            "No repositories specified. Use ?repos=owner/repo,owner2/repo2",
+        }),
         400,
       );
     }
@@ -81,26 +89,36 @@ export class GitHubReleases extends OpenAPIRoute {
       .filter(Boolean)
       .slice(0, MAX_REPOS);
 
-    const cacheKey = makeCacheKey("gh-releases", [...repoList].sort().join(","));
+    const cacheKey = makeCacheKey(
+      "gh-releases",
+      [...repoList].sort().join(","),
+    );
     const token = c.env.GITHUB_TOKEN;
-    const data = await cached(c.env.API_CACHE, cacheKey, 3600, async () => {
-      const settled = await Promise.allSettled(
-        repoList.map((repo) => fetchRelease(repo, token)),
-      );
+    const data = await cached(
+      c.env.API_CACHE,
+      cacheKey,
+      3600,
+      async () => {
+        const settled = await Promise.allSettled(
+          repoList.map((repo) => fetchRelease(repo, token)),
+        );
 
-      const results = repoList.map((repo, i) => {
-        const r = settled[i]!;
-        return r.status === "fulfilled"
-          ? r.value
-          : { repo, error: "Failed to fetch release" };
-      });
+        const results = repoList.map((repo, i) => {
+          const r = settled[i]!;
+          return r.status === "fulfilled"
+            ? r.value
+            : { repo, error: "Failed to fetch release" };
+        });
 
-      return {
-        source: "GitHub Releases",
-        count: results.length,
-        releases: results,
-      };
-    }, (result) => result.releases.every((r: Record<string, unknown>) => !r.error));
+        return {
+          source: "GitHub Releases",
+          count: results.length,
+          releases: results,
+        };
+      },
+      (result) =>
+        result.releases.every((r: Record<string, unknown>) => !r.error),
+    );
 
     // Recompute timeAgo from cached publishedAt so it stays fresh
     for (const r of data.releases as Record<string, unknown>[]) {
@@ -125,6 +143,7 @@ async function fetchRelease(repo: string, token?: string) {
         "User-Agent": "CloudflareWorker-API",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
+      signal: AbortSignal.timeout(10000),
     },
   );
 
@@ -175,4 +194,3 @@ async function fetchRelease(repo: string, token?: string) {
     })),
   };
 }
-

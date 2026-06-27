@@ -1,10 +1,20 @@
 import type { TimelineEvent } from "../types";
 
 export async function fetchBlog(feedUrl: string): Promise<TimelineEvent[]> {
-  const res = await fetch(feedUrl, {
-    headers: { "User-Agent": "timeline-worker/1.0" },
-  });
-  if (!res.ok) return [];
+  let res: Response;
+  try {
+    res = await fetch(feedUrl, {
+      headers: { "User-Agent": "timeline-worker/1.0" },
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) {
+    console.log(`Blog fetch error: ${e}`);
+    return [];
+  }
+  if (!res.ok) {
+    console.log(`Blog fetch failed: ${res.status}`);
+    return [];
+  }
 
   const xml = await res.text();
   const entries: TimelineEvent[] = [];
@@ -14,9 +24,11 @@ export async function fetchBlog(feedUrl: string): Promise<TimelineEvent[]> {
 
   while ((match = entryRegex.exec(xml)) !== null) {
     const block = match[1];
-    const title = block.match(/<title[^>]*>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? "";
+    const title =
+      block.match(/<title[^>]*>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? "";
     const id = block.match(/<id>([\s\S]*?)<\/id>/)?.[1]?.trim() ?? "";
-    const updated = block.match(/<updated>([\s\S]*?)<\/updated>/)?.[1]?.trim() ?? "";
+    const updated =
+      block.match(/<updated>([\s\S]*?)<\/updated>/)?.[1]?.trim() ?? "";
 
     const linkMatch =
       block.match(/<link[^>]*rel="alternate"[^>]*href="([^"]*)"[^>]*\/>/) ||

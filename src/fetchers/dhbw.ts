@@ -97,7 +97,7 @@ export async function fetchDhbwCourse(
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return (await res.json()) as T;
 }

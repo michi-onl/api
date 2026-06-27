@@ -40,18 +40,40 @@ export class Billboard200 extends OpenAPIRoute {
   };
 
   async handle(c: AppContext) {
-    const data = await cached(c.env.API_CACHE, "billboard:v1", 1800, () =>
-      fetchBillboard(),
+    const data = await cached(
+      c.env.API_CACHE,
+      "billboard:v1",
+      1800,
+      () => fetchBillboard(),
+      (result) => result.music.data.length > 0,
     );
     return c.json(data);
   }
 }
 
+const EMPTY_BILLBOARD = {
+  music: {
+    data_title: "Billboard 200",
+    data_desc: "",
+    data: [] as z.infer<typeof BillboardItemSchema>[],
+  },
+};
+
 async function fetchBillboard() {
-  const res = await fetch("https://www.billboard.com/charts/billboard-200/", {
-    headers: { "User-Agent": USER_AGENT },
-  });
-  if (!res.ok) throw new Error(`Billboard fetch failed: ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch("https://www.billboard.com/charts/billboard-200/", {
+      headers: { "User-Agent": USER_AGENT },
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) {
+    console.log(`Billboard fetch error: ${e}`);
+    return EMPTY_BILLBOARD;
+  }
+  if (!res.ok) {
+    console.log(`Billboard fetch failed: ${res.status}`);
+    return EMPTY_BILLBOARD;
+  }
 
   const $ = cheerio.load(await res.text());
   const topItems: z.infer<typeof BillboardItemSchema>[] = [];
@@ -131,4 +153,3 @@ async function fetchBillboard() {
     music: { data_title: dataTitle, data_desc: dataDesc, data: topItems },
   };
 }
-

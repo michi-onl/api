@@ -1,0 +1,15 @@
+# Local secrets for `wrangler dev`. Copy to `.dev.vars` and fill in.
+# Plaintext vars (GITHUB_USER, WIKI_USER, BLOG_FEED) come from wrangler.jsonc;
+# only the secrets below need to live here.
+
+# Optional: raises GitHub API rate limits. Leave unset to use anonymous limits.
+GITHUB_TOKEN=
+
+# Linkding bookmarks API token.
+LINKDING_TOKEN=
+
+# TMDB API read access token (Bearer).
+TMDB_TOKEN=
+
+# Token required on every /api/* request (Authorization: Bearer <token> or ?token=).
+API_TOKEN=

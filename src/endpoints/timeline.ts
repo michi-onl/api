@@ -12,7 +12,9 @@ import { normalize } from "../normalize";
 const TimelineEventSchema = z.object({
   id: z.string().describe("Unique event identifier"),
   date: z.string().describe("ISO 8601 date"),
-  source: z.enum(["github", "wikipedia", "blog", "gallery", "imdb"]).describe("Event source"),
+  source: z
+    .enum(["github", "wikipedia", "blog", "gallery", "imdb"])
+    .describe("Event source"),
   title: z.string().describe("Event title"),
   url: z.string().describe("Event URL"),
 });
@@ -41,41 +43,43 @@ export class Timeline extends OpenAPIRoute {
 
   async handle(c: AppContext) {
     const env = c.env;
-    const category = c.req.query("category") as
-      | "media"
-      | "contributions"
-      | undefined;
+    const { query } = await this.getValidatedData<typeof this.schema>();
+    const category = query.category;
 
-    const cacheKey = category
-      ? `timeline:v1:${category}`
-      : "timeline:v1";
+    const cacheKey = category ? `timeline:v1:${category}` : "timeline:v1";
 
-    const events = await cached(env.API_CACHE, cacheKey, 900, async () => {
-      const mediaFetchers = [
-        fetchBlog(env.BLOG_FEED),
-        fetchGallery(),
-        Promise.resolve(fetchImdb()),
-      ];
-      const contribFetchers = [
-        fetchGitHub(env.GITHUB_USER, env.GITHUB_TOKEN),
-        fetchWikipedia(env.WIKI_USER),
-      ];
+    const events = await cached(
+      env.API_CACHE,
+      cacheKey,
+      900,
+      async () => {
+        const mediaFetchers = [
+          fetchBlog(env.BLOG_FEED),
+          fetchGallery(),
+          Promise.resolve().then(() => fetchImdb()),
+        ];
+        const contribFetchers = [
+          fetchGitHub(env.GITHUB_USER, env.GITHUB_TOKEN),
+          fetchWikipedia(env.WIKI_USER),
+        ];
 
-      const chosen =
-        category === "media"
-          ? mediaFetchers
-          : category === "contributions"
-            ? contribFetchers
-            : [...contribFetchers, ...mediaFetchers];
+        const chosen =
+          category === "media"
+            ? mediaFetchers
+            : category === "contributions"
+              ? contribFetchers
+              : [...contribFetchers, ...mediaFetchers];
 
-      const results = await Promise.allSettled(chosen);
+        const results = await Promise.allSettled(chosen);
 
-      const events = normalize(
-        results.flatMap((r) => (r.status === "fulfilled" ? r.value : [])),
-      );
+        const events = normalize(
+          results.flatMap((r) => (r.status === "fulfilled" ? r.value : [])),
+        );
 
-      return events;
-    }, (result) => result.length > 0);
+        return events;
+      },
+      (result) => result.length > 0,
+    );
 
     return c.json(events);
   }

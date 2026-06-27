@@ -60,7 +60,8 @@ export class DhbwTimetable extends OpenAPIRoute {
     summary: `DHBW timetable for ${DHBW_COURSE_CODE}`,
     responses: {
       "200": {
-        description: "Course metadata and lecture schedule merged into one cached response",
+        description:
+          "Course metadata and lecture schedule merged into one cached response",
         ...contentJson(DhbwTimetableResponseSchema),
       },
     },

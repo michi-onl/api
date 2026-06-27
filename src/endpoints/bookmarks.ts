@@ -34,8 +34,12 @@ export class Bookmarks extends OpenAPIRoute {
   };
 
   async handle(c: AppContext) {
-    const data = await cached(c.env.API_CACHE, "bookmarks:v1", 600, () =>
-      fetchBookmarks(c.env.LINKDING_TOKEN),
+    const data = await cached(
+      c.env.API_CACHE,
+      "bookmarks:v1",
+      600,
+      () => fetchBookmarks(c.env.LINKDING_TOKEN),
+      (result) => result.bookmarks.length > 0,
     );
     return c.json(data);
   }
@@ -43,10 +47,20 @@ export class Bookmarks extends OpenAPIRoute {
 
 async function fetchBookmarks(token: string) {
   const apiUrl = `${LINKDING_URL}/api/bookmarks/?limit=10&format=json`;
-  const res = await fetch(apiUrl, {
-    headers: { Authorization: `Token ${token}` },
-  });
-  if (!res.ok) throw new Error(`Linkding fetch failed: ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch(apiUrl, {
+      headers: { Authorization: `Token ${token}` },
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) {
+    console.log(`Linkding fetch error: ${e}`);
+    return { source: "Linkding", url: LINKDING_URL, count: 0, bookmarks: [] };
+  }
+  if (!res.ok) {
+    console.log(`Linkding fetch failed: ${res.status}`);
+    return { source: "Linkding", url: LINKDING_URL, count: 0, bookmarks: [] };
+  }
 
   const data = (await res.json()) as { results: Record<string, unknown>[] };
 
@@ -54,7 +68,8 @@ async function fetchBookmarks(token: string) {
     id: b.id,
     url: b.url,
     title: (b.title as string) || (b.website_title as string) || "",
-    description: (b.description as string) || (b.website_description as string) || "",
+    description:
+      (b.description as string) || (b.website_description as string) || "",
     tags: b.tag_names,
     date_added: b.date_added,
   }));

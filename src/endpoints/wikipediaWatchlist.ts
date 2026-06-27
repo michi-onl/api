@@ -1,7 +1,7 @@
 import { contentJson, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import * as cheerio from "cheerio";
-import type { AppContext } from "../types";
+import { ErrorResponseSchema, type AppContext } from "../types";
 import { cached } from "../cache";
 import { formatTimeAgo, makeCacheKey } from "../utils";
 
@@ -24,10 +24,15 @@ const WikiResponseSchema = z.object({
   source: z.string(),
   count: z.number().describe("Number of edits returned"),
   edits: z.array(WikiEditSchema),
-  errors: z.array(z.object({
-    language: z.string(),
-    error: z.string(),
-  })).nullable().describe("Errors per language, or null if none"),
+  errors: z
+    .array(
+      z.object({
+        language: z.string(),
+        error: z.string(),
+      }),
+    )
+    .nullable()
+    .describe("Errors per language, or null if none"),
 });
 
 export class WikipediaWatchlist extends OpenAPIRoute {
@@ -49,9 +54,18 @@ export class WikipediaWatchlist extends OpenAPIRoute {
                 .describe(
                   'Format "lang:token,lang2:token2" (watchlist tokens)',
                 ),
-              languages: z.string().default("en").describe("Comma-separated language codes"),
-              hours: z.coerce.number().default(72).describe("Hours back to fetch"),
-              limit: z.coerce.number().default(10).describe("Max edits per language"),
+              languages: z
+                .string()
+                .default("en")
+                .describe("Comma-separated language codes"),
+              hours: z.coerce
+                .number()
+                .default(72)
+                .describe("Hours back to fetch"),
+              limit: z.coerce
+                .number()
+                .default(10)
+                .describe("Max edits per language"),
             }),
           },
         },
@@ -76,7 +90,10 @@ export class WikipediaWatchlist extends OpenAPIRoute {
 
     if (!usernames || !tokens) {
       return c.json(
-        { error: "Missing required parameters. Provide usernames and tokens in POST body." },
+        ErrorResponseSchema.parse({
+          error:
+            "Missing required parameters. Provide usernames and tokens in POST body.",
+        }),
         400,
       );
     }
@@ -87,59 +104,99 @@ export class WikipediaWatchlist extends OpenAPIRoute {
     // Validate all entries
     for (const [lang, user] of Object.entries(usernameDict)) {
       if (!WIKI_LANG_RE.test(lang))
-        return c.json({ error: `Invalid language code: ${lang}` }, 400);
+        return c.json(
+          ErrorResponseSchema.parse({
+            error: `Invalid language code: ${lang}`,
+          }),
+          400,
+        );
       if (!WIKI_USERNAME_RE.test(user))
-        return c.json({ error: `Invalid username format: ${user}` }, 400);
+        return c.json(
+          ErrorResponseSchema.parse({
+            error: `Invalid username format: ${user}`,
+          }),
+          400,
+        );
     }
     for (const lang of Object.keys(tokenDict)) {
       if (!WIKI_LANG_RE.test(lang))
-        return c.json({ error: `Invalid language code: ${lang}` }, 400);
+        return c.json(
+          ErrorResponseSchema.parse({
+            error: `Invalid language code: ${lang}`,
+          }),
+          400,
+        );
     }
 
-    const langList = languages.split(",").map((l) => l.trim()).filter(Boolean);
+    const langList = languages
+      .split(",")
+      .map((l) => l.trim())
+      .filter(Boolean);
 
     const usernamesPart = Object.entries(usernameDict)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}:${v}`)
       .join(",");
-    const cacheKey = makeCacheKey("wiki", [...langList].sort().join(","), usernamesPart, String(hours), String(limit));
-    const data = await cached(c.env.API_CACHE, cacheKey, 3600, async () => {
-      const allEdits: Record<string, unknown>[] = [];
-      const errors: Record<string, unknown>[] = [];
+    // Include a hash of the watchlist tokens so callers with different (or bogus)
+    // tokens never read another caller's cached, token-authorized data.
+    const tokenHash = await hashTokens(tokenDict);
+    const cacheKey = makeCacheKey(
+      "wiki",
+      [...langList].sort().join(","),
+      usernamesPart,
+      tokenHash,
+      String(hours),
+      String(limit),
+    );
+    const data = await cached(
+      c.env.API_CACHE,
+      cacheKey,
+      3600,
+      async () => {
+        const allEdits: Record<string, unknown>[] = [];
+        const errors: Record<string, unknown>[] = [];
 
-      const settled = await Promise.allSettled(
-        langList.map((lang) =>
-          fetchWatchlist(lang, usernameDict[lang], tokenDict[lang], hours, limit),
-        ),
-      );
+        const settled = await Promise.allSettled(
+          langList.map((lang) =>
+            fetchWatchlist(
+              lang,
+              usernameDict[lang],
+              tokenDict[lang],
+              hours,
+              limit,
+            ),
+          ),
+        );
 
-      for (let i = 0; i < langList.length; i++) {
-        const r = settled[i]!;
-        if (r.status === "fulfilled") {
-          allEdits.push(...r.value);
-        } else {
-          errors.push({
-            language: langList[i]!,
-            error: `Failed to fetch ${langList[i]!} watchlist`,
-          });
+        for (let i = 0; i < langList.length; i++) {
+          const r = settled[i]!;
+          if (r.status === "fulfilled") {
+            allEdits.push(...r.value);
+          } else {
+            errors.push({
+              language: langList[i]!,
+              error: `Failed to fetch ${langList[i]!} watchlist`,
+            });
+          }
         }
-      }
 
-      // Sort by published date descending
-      allEdits.sort((a, b) => {
-        const da = a.publishedAt as string;
-        const db = b.publishedAt as string;
-        if (!da || !db) return 0;
-        return db.localeCompare(da);
-      });
+        // Sort by published date descending
+        allEdits.sort((a, b) => {
+          const da = a.publishedAt as string;
+          const db = b.publishedAt as string;
+          if (!da || !db) return 0;
+          return db.localeCompare(da);
+        });
 
-      return {
-        source: "Wikipedia Watchlist",
-        count: allEdits.length,
-        edits: allEdits.slice(0, limit),
-        errors: errors.length ? errors : null,
-      };
-    }, (result) => !result.errors);
+        return {
+          source: "Wikipedia Watchlist",
+          count: allEdits.length,
+          edits: allEdits.slice(0, limit),
+          errors: errors.length ? errors : null,
+        };
+      },
+      (result) => !result.errors,
+    );
 
     // Recompute timeAgo from cached publishedAt so it stays fresh
     for (const edit of data.edits) {
@@ -169,11 +226,14 @@ async function fetchWatchlist(
     wlexcludeuser: username,
   });
 
-  const res = await fetch(
-    `https://${lang}.wikipedia.org/w/api.php?${params}`,
-    { headers: { "User-Agent": USER_AGENT } },
-  );
-  if (!res.ok) throw new Error(`Wiki ${lang} fetch failed: ${res.status}`);
+  const res = await fetch(`https://${lang}.wikipedia.org/w/api.php?${params}`, {
+    headers: { "User-Agent": USER_AGENT },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) {
+    console.log(`Wiki ${lang} fetch failed: ${res.status}`);
+    throw new Error(`Wiki ${lang} fetch failed: ${res.status}`);
+  }
 
   const xml = await res.text();
   const $ = cheerio.load(xml, { xmlMode: true });
@@ -221,3 +281,17 @@ function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
 
+async function hashTokens(tokenDict: Record<string, string>): Promise<string> {
+  const raw = Object.entries(tokenDict)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}:${v}`)
+    .join(",");
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(raw),
+  );
+  return [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 16);
+}

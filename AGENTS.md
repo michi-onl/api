@@ -38,23 +38,23 @@ No test runner, linter, or CI is configured — do not invent verification steps
 ## Auth & CORS
 
 - All `/api/*` routes require `API_TOKEN` — accepted as `Authorization: Bearer <token>` or `?token=<token>`.
-- CORS allows `https://www.michi.onl` and any `localhost`/`127.0.0.1` origin.
+- CORS allows `https://michi.onl` and any `localhost`/`127.0.0.1` origin.
 
 ## Environment & Bindings
 
 Defined in `wrangler.jsonc` (plaintext vars), `.dev.vars` (secrets), and typed by `Env` in `src/types.ts` (canonical checklist):
 
-| Binding | Type | Purpose |
-|---------|------|---------|
-| `API_CACHE` | KV namespace | Cache storage |
-| `ASSETS` | static assets | Serves `public/` |
-| `GITHUB_USER` | var | GitHub username |
-| `WIKI_USER` | var | Wikipedia username |
-| `BLOG_FEED` | var | Blog RSS feed URL |
-| `GITHUB_TOKEN` | secret (optional) | Higher GitHub rate limits |
-| `LINKDING_TOKEN` | secret | Bookmarks API |
-| `TMDB_TOKEN` | secret | TMDB API (trending movies/TV) |
-| `API_TOKEN` | secret | Incoming request auth |
+| Binding          | Type              | Purpose                       |
+| ---------------- | ----------------- | ----------------------------- |
+| `API_CACHE`      | KV namespace      | Cache storage                 |
+| `ASSETS`         | static assets     | Serves `public/`              |
+| `GITHUB_USER`    | var               | GitHub username               |
+| `WIKI_USER`      | var               | Wikipedia username            |
+| `BLOG_FEED`      | var               | Blog RSS feed URL             |
+| `GITHUB_TOKEN`   | secret (optional) | Higher GitHub rate limits     |
+| `LINKDING_TOKEN` | secret            | Bookmarks API                 |
+| `TMDB_TOKEN`     | secret            | TMDB API (trending movies/TV) |
+| `API_TOKEN`      | secret            | Incoming request auth         |
 
 Run `npm run cf-typegen` after changing bindings; generated types land in `worker-configuration.d.ts`.
 
@@ -71,6 +71,7 @@ Hard-won rules from past bugfixes — follow them:
 - **Cache resilience**: `cached()` already wraps KV read/write in try/catch. Never let a cache failure bubble up as an error response.
 - **Auth fails closed**: unset or mismatched `API_TOKEN` → 401/500, never pass through.
 - **Upstream fetch failures**: `console.log` them, then return partial/empty result. Never swallow silently. Timeline's `Promise.allSettled` is the model.
+- **Outbound fetch timeouts**: every `fetch()` to an external host passes `signal: AbortSignal.timeout(10000)` so a slow upstream can't hold the request to the Worker wall-clock limit. A timeout rejects the fetch — handle it on the same path as a non-OK response (log + empty result, or let `Promise.allSettled` absorb it).
 - **GitHub API**: pass `GITHUB_TOKEN` when available for higher rate limits.
 - **OpenAPI tags**: exactly 4 categories — `Media & Entertainment`, `Development & Tech`, `Knowledge & Education`, `Personal Aggregation`. Assign every endpoint one.
 

@@ -28,10 +28,20 @@ export async function fetchWikipedia(user: string): Promise<TimelineEvent[]> {
     ucprop: "ids|title|timestamp|comment|size|sizediff|flags",
   });
 
-  const res = await fetch(`https://de.wikipedia.org/w/api.php?${params}`, {
-    headers: { "User-Agent": "timeline-worker/1.0" },
-  });
-  if (!res.ok) return [];
+  let res: Response;
+  try {
+    res = await fetch(`https://de.wikipedia.org/w/api.php?${params}`, {
+      headers: { "User-Agent": "timeline-worker/1.0" },
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (e) {
+    console.log(`Wikipedia fetch error: ${e}`);
+    return [];
+  }
+  if (!res.ok) {
+    console.log(`Wikipedia fetch failed: ${res.status}`);
+    return [];
+  }
 
   const data: { query?: { usercontribs?: WikiContrib[] } } = await res.json();
   const contribs = data.query?.usercontribs ?? [];
@@ -40,8 +50,7 @@ export async function fetchWikipedia(user: string): Promise<TimelineEvent[]> {
     .filter((c) => c.ns === 0)
     .map((c) => {
       const summary = c.comment ? `: ${c.comment}` : "";
-      const sizePrefix =
-        c.sizediff > 0 ? `+${c.sizediff}` : String(c.sizediff);
+      const sizePrefix = c.sizediff > 0 ? `+${c.sizediff}` : String(c.sizediff);
       const label = c.minor ? "Minor edit" : "Edited";
       return {
         id: `wiki:${c.revid}`,
